@@ -2,7 +2,7 @@ import sys
 
 
 def define_visitor(f):
-    data = "\n#Visitor Method\n\tdef accept(self, visitor):\n\t\tvisitor.accept(self)\n\n"
+    data = "\n\t#Visitor Method\n\tdef accept(self, visitor):\n\t\treturn visitor.visit()\n\n"
     f.write(data)
 
 def comments(f):
@@ -12,7 +12,7 @@ def comments(f):
 
 def define_type(file, c_name, fields):
     # class definition with constructor
-    _class = "class {}:\n#Constructor\n\tdef __init__(self, {}):\n{}".format(c_name, fields, "".join("\t\tself.{} = {}\n".format(i, i) for i in fields.split(",")))
+    _class = "class {}:\n\t#Constructor\n\tdef __init__(self, {}):\n{}".format(c_name, fields, "".join("\t\tself.{} = {}\n".format(i, i) for i in fields.split(",")))
 
     file.write(_class)
 
@@ -26,10 +26,10 @@ def generate_ast():
     print("Path", path)
     
     classes = {
-        "Binary": "left, operator, right",
+        "Binary": "left,operator,right",
         "Grouping": "expression",
         "Literal": "value",
-        "Unary": "operator, right"
+        "Unary": "operator,right"
     }
     f = open(path, "w")
     comments(f)
