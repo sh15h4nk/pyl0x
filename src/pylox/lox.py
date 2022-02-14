@@ -1,7 +1,7 @@
 import sys
 import argparse
 
-from scanner.scanner import scanner
+from pylox.scanner.scanner import scanner
 
 def repl():
 	try:
@@ -35,3 +35,4 @@ def main():
 
 if __name__ == "__main__":
 	main()
+	

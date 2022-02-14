@@ -1,9 +1,8 @@
+"""This is scanner, which scans the source and segegrates into tokens"""
 
 from scanner.token_types import TOKEN_TYPES, single_char_token, multi_char_token, keywords
 from scanner.token import token
-
-from error_reporter import error
-
+from pylox.error_reporter import error
 from decimal import Decimal
 
 class scanner:
@@ -18,7 +17,6 @@ class scanner:
     
     def __repr__(self) -> str:
         return "source: {} tokens: {}".format(self.source, self.tokens)
-    
 
     def scan_tokens(self):
         while(not self.is_at_end()):
@@ -51,6 +49,7 @@ class scanner:
         
         elif c in [" ", "\r", "\t"]:
             pass
+
         elif c == "\n":
             self.line += 1
         
@@ -83,7 +82,7 @@ class scanner:
         if (self.peek() == "." and self.peek_next().isdigit()):
             self.advance()
             while self.peek().isdigit(): self.advance()
-        print("The number", self.source[self.start: self.current])
+    
         self.add_token(TOKEN_TYPES.NUMBER, Decimal(self.source[self.start: self.current]))
     
     def string(self):
@@ -91,7 +90,7 @@ class scanner:
             if (self.peek() == "\n"): self.line += 1
             self.advance()
         if (self.is_at_end()):
-            error(self.line, "Unterminated string")
+            error(self.line, "Undeterminated string")
             return
         
         self.advance()
@@ -110,8 +109,10 @@ class scanner:
     def match(self, expected):
         if(self.is_at_end()):
             return False
+            
         if (self.source[self.current] != expected):
             return False
+
         self.current += 1
         return True
 
@@ -124,5 +125,3 @@ class scanner:
     def add_token(self, type, literal):
         lexeme = self.source[self.start: self.current]
         self.tokens.append(token(type, lexeme, literal, self.line))
-    
-
