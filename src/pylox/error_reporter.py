@@ -1,3 +1,4 @@
+"""Error Reporters"""
 def report(line, where, message):
     print("Error:", "[line: "+str(line)+"]", where, ":", message)
 
