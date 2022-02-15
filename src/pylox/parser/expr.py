@@ -7,6 +7,9 @@ class Binary:
 		self.left = left
 		self.operator = operator
 		self.right = right
+	
+	def __repr__(self) -> str:
+		return "{} {} {}".format(self.left, self.operator, self.right)
 
 	#Visitor Method
 	def accept(self, visitor):
@@ -16,6 +19,9 @@ class Grouping:
 	#Constructor
 	def __init__(self, expression):
 		self.expression = expression
+	
+	def __repr__(self) -> str:
+		return str(self.expression)
 
 	#Visitor Method
 	def accept(self, visitor):
@@ -25,6 +31,9 @@ class Literal:
 	#Constructor
 	def __init__(self, value):
 		self.value = value
+	
+	def __repr__(self) -> str:
+		return str(self.value)
 
 	#Visitor Method
 	def accept(self, visitor):
@@ -35,6 +44,9 @@ class Unary:
 	def __init__(self, operator,right):
 		self.operator = operator
 		self.right = right
+	
+	def __repr__(self) -> str:
+		return "{}{}".format(self.operator, self.right)
 
 	#Visitor Method
 	def accept(self, visitor):
