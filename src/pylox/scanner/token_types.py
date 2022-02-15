@@ -13,7 +13,8 @@ single_char_token = {
     "MINUS" : "-",
     "PLUS" : "+",
     "SEMICOLON" : ";",
-    "STAR" : "*"
+    "STAR" : "*",
+    "SLASH": "/"
 }
 
 # One or more character tokens
