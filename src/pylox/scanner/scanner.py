@@ -2,7 +2,7 @@
 
 from scanner.token_types import TOKEN_TYPES, single_char_token, multi_char_token, keywords
 from scanner.token import token
-from pylox.error_reporter import error
+from pylox.error_reporter import report
 from decimal import Decimal
 
 class scanner:
@@ -23,6 +23,7 @@ class scanner:
             self.start = self.current
             self.scan_token()
         self.tokens.append(token("EOF", "", None, self.line))
+        return self.tokens
 
     def is_at_end(self) -> bool:
         return self.current >= len(self.source)
@@ -63,7 +64,7 @@ class scanner:
             self.identifier()
 
         else:
-            error(self.line, "Unexpected character")
+            report(self.line, c, "Unexpected character")
     
     def identifier(self):
         while (self.peek().isalnum()): self.advance()
@@ -74,7 +75,6 @@ class scanner:
             type = list(keywords.keys())[list(keywords.values()).index(lexeme)]
 
         self.add_token(type, None)
-
     
     def number(self):
         while (self.peek().isdigit()): self.advance()
@@ -90,7 +90,7 @@ class scanner:
             if (self.peek() == "\n"): self.line += 1
             self.advance()
         if (self.is_at_end()):
-            error(self.line, "Undeterminated string")
+            report(self.line, "Undeterminated string")
             return
         
         self.advance()
