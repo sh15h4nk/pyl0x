@@ -2,14 +2,20 @@ import sys
 import argparse
 
 from pylox.scanner.scanner import scanner
+from pylox.parser.parser import parser
+from pylox.parser.ast_printer import ast_printer
 
 def repl():
 	try:
 		while True:
 			cmd = input("> ")
 			s = scanner(cmd)
-			s.scan_tokens()
-			print(s)
+			tokens = s.scan_tokens()
+			# print("The tokens", tokens)
+			p = parser(tokens)
+			expression = p.parse()
+			print("The AST:")
+			ast_printer(expression)
 	except (KeyboardInterrupt, EOFError) as e:
 		print(" Bye :)")
 		sys.exit(0)
