@@ -1,5 +1,5 @@
 
-import expr as EXP
+import pylox.parser.expr as EXP
 from pylox.scanner.token import token
 from pylox.scanner.token_types import TOKEN_TYPES
 
@@ -11,8 +11,6 @@ def parenthesize(name, *arg):
     builder += ")"
 
     return builder
-
-
 
 def visit_binary_expr(self):
     return parenthesize(self.operator.lexeme, self.left, self.right)
@@ -35,8 +33,7 @@ def ast_printer(expr):
     print(expr.accept(expr))
 
 
-
-
 if __name__ == "__main__":
     expression = EXP.Binary(EXP.Unary(token(TOKEN_TYPES.MINUS, "-", None, 1), EXP.Literal(123)), token(TOKEN_TYPES.STAR, "*", None, 1), EXP.Grouping(EXP.Literal(45.67)))
     ast_printer(expression)
+
