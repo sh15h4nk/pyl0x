@@ -6,4 +6,4 @@ class token:
         self.literal = literal
         self.line = line
     def __repr__(self) -> str:
-        return "<{} {} {}>".format(self.type, self.lexeme, self.literal)
+        return "<TYPE:({}) LEXEME:({}) LITERAL:({})>".format(self.type, self.lexeme, self.literal)
