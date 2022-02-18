@@ -4,6 +4,7 @@ from ast import arg
 from pylox.scanner.token import token
 from pylox.scanner.token_types import TOKEN_TYPES
 import pylox.parser.expr as EXP
+import pylox.parser.stmt as STMT
 from pylox.error_reporter import error as lox_error
 from types import SimpleNamespace
 
@@ -27,6 +28,7 @@ TOKEN_TYPE.DOT = "DOT"
 TOKEN_TYPE.SEMICOLON = "SEMICOLON"
 TOKEN_TYPE.LEFT_BRACE = "LEFT_BRACE"
 TOKEN_TYPE.RIGHT_BRACE = "RIGHT_BRACE"
+TOKEN_TYPE.PRINT = "PRINT"
 
 
 
@@ -36,10 +38,23 @@ class parser:
         self.current = 0
     
     def parse(self):
-        try:
-            return self.expression()
-        except self.parse_error: 
-            return None
+        statements = []
+        while not self.isAtEnd(): statements.append(self.statement())
+        return statements
+    
+    def statement(self):
+        if (self.match(TOKEN_TYPE.PRINT)): return self.print_statement()
+        return self.expression_statement()
+
+    def print_statement(self):
+        value = self.expression()
+        self.consume(TOKEN_TYPE.SEMICOLON, "Expected ';' after value.")
+        return STMT.Print(value)
+    
+    def expression_statement(self):
+        expr = self.expression()
+        self.consume(TOKEN_TYPE.SEMICOLON, "Expect ';' after expression")
+        return STMT.Expression(expr)
     
     def expression(self):
         return self.equality()
