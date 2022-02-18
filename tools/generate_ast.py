@@ -1,12 +1,14 @@
 import sys
 
+DEFAULT_PATH = "../src/pylox/parser"
+
 
 def define_visitor(f):
     data = "\n\t#Visitor Method\n\tdef accept(self, visitor):\n\t\treturn visitor.visit()\n\n"
     f.write(data)
 
-def comments(f):
-    message = "{}Node classes(expression classes) definition{}\n{}This is a generated file, from tools/generate_ast.py script{}\n\n".format('"""', '"""', '"""', '"""')
+def comments(f, c):
+    message = "{}Node classes({} classes) definition{}\n{}This is a generated file, from tools/generate_ast.py script{}\n\n".format('"""', c, '"""', '"""', '"""')
     f.write(message)
 
 
@@ -16,23 +18,29 @@ def define_type(file, c_name, fields):
 
     file.write(_class)
 
-def generate_ast():
-    if (len(sys.argv) != 3):
-        raise SystemExit("Usage: python3 generate_ast.py <output directory> <file>")
-    out_dir = sys.argv[1]
-    file_name = sys.argv[2]
+def generate_ast(filename, path = DEFAULT_PATH):
+    out_dir = path
+    file_name = filename
     path = "{}/{}.py".format(out_dir, file_name)
 
     print("Path", path)
     
-    classes = {
-        "Binary": "left,operator,right",
-        "Grouping": "expression",
-        "Literal": "value",
-        "Unary": "operator,right"
-    }
+    if file_name == "expr":
+        classes = {
+            "Binary": "left,operator,right",
+            "Grouping": "expression",
+            "Literal": "value",
+            "Unary": "operator,right"
+        }
+    elif file_name == "stmt":
+        classes = {
+            "Expression": "expression",
+            "Print": "expression"
+        }
+    else:
+        raise SystemExit("Invalid filename")
     f = open(path, "w")
-    comments(f)
+    comments(f, file_name)
     
     for c_name,fields in classes.items():
         # fields = fields.split(",")
@@ -43,4 +51,10 @@ def generate_ast():
     
 
 if __name__ == "__main__":
-    generate_ast()
+    c = int(input("__MENU__\n1. Expr\n2. Stmt\nEnter the class: "))
+    if (c == 1):
+        generate_ast("expr")
+    elif (c == 2):
+        generate_ast("stmt")
+    else:
+        raise SystemExit("Invalid option")
