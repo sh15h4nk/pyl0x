@@ -9,4 +9,4 @@ def error(token, message):
     return report(token.line, "at '" + str(token.lexeme) + "' ", message)
 
 def run_time_error(error):
-    print("{} \n[line {} ]".format(error.getMessage(), error.token.line))
+    print("{} \t[line {} ]".format(error, error.token.line))
