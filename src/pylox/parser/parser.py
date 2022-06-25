@@ -1,6 +1,6 @@
 
 
-from ast import arg
+from ast import arg, stmt
 from pylox.scanner.token import token
 from pylox.scanner.token_types import TOKEN_TYPES
 import pylox.parser.expr as EXP
@@ -29,6 +29,8 @@ TOKEN_TYPE.SEMICOLON = "SEMICOLON"
 TOKEN_TYPE.LEFT_BRACE = "LEFT_BRACE"
 TOKEN_TYPE.RIGHT_BRACE = "RIGHT_BRACE"
 TOKEN_TYPE.PRINT = "PRINT"
+TOKEN_TYPE.VAR = "VAR"
+TOKEN_TYPE.IDENTIFIER = "IDENTIFIER"
 
 
 
@@ -39,11 +41,29 @@ class parser:
     
     def parse(self):
         statements = []
-        while not self.isAtEnd(): statements.append(self.statement())
+        while not self.isAtEnd():
+            statements.append(self.declaration())
         return statements
+    
+    def declaration(self):
+        try:
+            if self.match(TOKEN_TYPE.VAR): return self.var_declaration()
+            return self.statement()
+        except:
+            self.synchronize()
+            return None
+    
+    def var_declaration(self):
+        name = self.consume(TOKEN_TYPE.IDENTIFIER, "Expected variable name")
+        
+        initializer  = None
+        if (self.match(TOKEN_TYPE.EQUAL)): initializer = self.expression()
+        self.consume(TOKEN_TYPE.SEMICOLON, "Expected ';' after variable decleration")
+        return STMT.Var(name, initializer)
     
     def statement(self):
         if (self.match(TOKEN_TYPE.PRINT)): return self.print_statement()
+        if(self.match(TOKEN_TYPE.LEFT_BRACE)): return STMT.Block(self.block())
         return self.expression_statement()
 
     def print_statement(self):
@@ -56,8 +76,25 @@ class parser:
         self.consume(TOKEN_TYPE.SEMICOLON, "Expect ';' after expression")
         return STMT.Expression(expr)
     
+    def block(self):
+        statements = []
+        while not self.check(TOKEN_TYPE.RIGHT_BRACE) and not self.isAtEnd(): statements.append(self.declaration())
+        self.consume(TOKEN_TYPE.RIGHT_BRACE, "Expect } after block.")
+        return statements
+    
+    def assignment(self):
+        expr = self.equality()
+        if (self.match(TOKEN_TYPE.EQUAL)):
+            equals = self.previous()
+            value = self.assignment()
+            if (type(expr) == EXP.Variable):
+                name = expr.name
+                return EXP.Assign(name, value)
+            self.error(equals, "Invalid assignment target")
+        return expr
+    
     def expression(self):
-        return self.equality()
+        return self.assignment()
     
     def equality(self):
         expr = self.comparison()
@@ -103,6 +140,7 @@ class parser:
         if self.match(TOKEN_TYPE.TRUE): return EXP.Literal(True)
         if self.match(TOKEN_TYPE.NIL): return EXP.Literal(None)
         if self.match(TOKEN_TYPE.NUMBER, TOKEN_TYPE.STRING): return EXP.Literal(self.previous().literal)
+        if self.match(TOKEN_TYPE.IDENTIFIER): return EXP.Variable(self.previous())
         if self.match(TOKEN_TYPE.LEFT_PAREN):
             expr = self.expression()
             self.consume(TOKEN_TYPE.RIGHT_PAREN, "Expect ')' after expression.")

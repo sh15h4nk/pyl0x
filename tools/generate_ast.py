@@ -27,15 +27,19 @@ def generate_ast(filename, path = DEFAULT_PATH):
     
     if file_name == "expr":
         classes = {
+            "Assign":"name,value",
             "Binary": "left,operator,right",
             "Grouping": "expression",
             "Literal": "value",
-            "Unary": "operator,right"
+            "Unary": "operator,right",
+            "Variable": "name"
         }
     elif file_name == "stmt":
         classes = {
+            "Block" : "statements",
             "Expression": "expression",
-            "Print": "expression"
+            "Print": "expression",
+            "Var": "name,initializer"
         }
     else:
         raise SystemExit("Invalid filename")

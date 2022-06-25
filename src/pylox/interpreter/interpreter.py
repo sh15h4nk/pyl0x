@@ -1,9 +1,25 @@
-
 import pylox.parser.expr as EXP
 import pylox.parser.stmt as STMT
 from pylox.exceptions.runtime_error import runtime_error
 from pylox.error_reporter import run_time_error
+from pylox.environment.environment import Environment
 
+
+environment = Environment()
+
+def visit_assign_expr(expr):
+    value = evaluate(expr.value)
+    environment.assign(expr.name, value)
+    return value
+
+def visit_var_stmt(stmt):
+    value = None
+    if (stmt.initializer != None): value = evaluate(stmt.initializer)
+    environment.define(stmt.name, value)
+    return None
+
+def visit_variable_expression(expr):
+    return environment.get(expr.name)
 
 def visit_expression_stmt(stmt):
     evaluate(stmt.expression)
@@ -91,6 +107,19 @@ def stringify(obj):
 
 def execute(stmt):
     stmt.accept(stmt)
+    
+def visit_block_stmt(stmt):
+    executeBlock(stmt.statements, Environment(environment))
+    return None
+
+def executeBlock(statements, env):
+    previous_env = environment
+    try:
+        environment = env
+        for stmt in statements:
+            execute(stmt)
+    finally:
+        environment = previous_env
 
 def interpret(statements):
     # assigning visitor method to the classes
@@ -98,9 +127,13 @@ def interpret(statements):
     EXP.Grouping.visit = visit_grouping_expr
     EXP.Literal.visit = visit_literal_expr
     EXP.Unary.visit = visit_unary_expr
+    EXP.Variable.visit = visit_variable_expression
+    EXP.Assign.visit = visit_assign_expr
+    
     STMT.Expression.visit = visit_expression_stmt
     STMT.Print.visit = visit_print_stmt
-
+    STMT.Var.visit = visit_var_stmt
+    
     try:
         for stmt in statements:
             execute(stmt)
