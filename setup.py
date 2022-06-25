@@ -5,7 +5,7 @@ setup(
     name="pylox",
     version="0.1.0",
     author="Shiva Shankar(sh15h4nk)",
-    author_email="shiva.shvvs@gmail.com",
+    author_email="0xsh1v@gmail.com",
     description="Interpreter for Lox language",
     packages= find_packages(
         where="src",
