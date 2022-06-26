@@ -1,3 +1,4 @@
+from glob import glob
 import pylox.parser.expr as EXP
 import pylox.parser.stmt as STMT
 from pylox.exceptions.runtime_error import runtime_error
@@ -6,6 +7,13 @@ from pylox.environment.environment import Environment
 
 
 environment = Environment()
+
+def visit_if_stmt(stmt):
+    if is_truthy(evaluate(stmt.condition)):
+        execute(stmt.thenBranch)
+    elif stmt.elseBranch is not None:
+        execute(stmt.elseBranch)
+    return None
 
 def visit_assign_expr(expr):
     value = evaluate(expr.value)
@@ -113,6 +121,7 @@ def visit_block_stmt(stmt):
     return None
 
 def executeBlock(statements, env):
+    global environment
     previous_env = environment
     try:
         environment = env
@@ -133,6 +142,9 @@ def interpret(statements):
     STMT.Expression.visit = visit_expression_stmt
     STMT.Print.visit = visit_print_stmt
     STMT.Var.visit = visit_var_stmt
+    STMT.Block.visit = visit_block_stmt
+    STMT.If.visit = visit_if_stmt
+    
     
     try:
         for stmt in statements:

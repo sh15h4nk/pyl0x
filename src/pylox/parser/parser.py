@@ -31,6 +31,8 @@ TOKEN_TYPE.RIGHT_BRACE = "RIGHT_BRACE"
 TOKEN_TYPE.PRINT = "PRINT"
 TOKEN_TYPE.VAR = "VAR"
 TOKEN_TYPE.IDENTIFIER = "IDENTIFIER"
+TOKEN_TYPE.IF = "IF"
+TOKEN_TYPE.ELSE = "ELSE"
 
 
 
@@ -62,9 +64,22 @@ class parser:
         return STMT.Var(name, initializer)
     
     def statement(self):
-        if (self.match(TOKEN_TYPE.PRINT)): return self.print_statement()
-        if(self.match(TOKEN_TYPE.LEFT_BRACE)): return STMT.Block(self.block())
+        if self.match(TOKEN_TYPE.IF): return self.if_statement()
+        if self.match(TOKEN_TYPE.PRINT): return self.print_statement()
+        if self.match(TOKEN_TYPE.LEFT_BRACE): return STMT.Block(self.block())
         return self.expression_statement()
+    
+    def if_statement(self):
+        self.consume(TOKEN_TYPE.LEFT_PAREN, "Expect '(' after if.")
+        condition = self.expression()
+        self.consume(TOKEN_TYPE.RIGHT_PAREN, "Expect ')' after if condition.")
+        
+        thenBranch = self.statement()
+        elseBranch = None
+        if self.match(TOKEN_TYPE.ELSE): elseBranch = self.statement
+        
+        return STMT.If(condition, thenBranch, elseBranch)
+        
 
     def print_statement(self):
         value = self.expression()

@@ -38,6 +38,7 @@ def generate_ast(filename, path = DEFAULT_PATH):
         classes = {
             "Block" : "statements",
             "Expression": "expression",
+            "If": "condition,thenBranch,elseBranch",
             "Print": "expression",
             "Var": "name,initializer"
         }

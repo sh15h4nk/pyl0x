@@ -16,6 +16,7 @@ def repl():
 				p = parser(tokens)
 				statements = p.parse()
 				i = interpret(statements)
+				exit(0)
 
 			except Exception as e:
 				print(e)

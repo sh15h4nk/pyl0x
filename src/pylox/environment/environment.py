@@ -14,7 +14,6 @@ class Environment:
         if name.lexeme in self.values:
             return self.values.get(name.lexeme)
         if self.enclosing is not None: return self.enclosing.get(name)
-        print("While getting shittt")
         raise runtime_error(name, "Undefined variable '" + name.lexeme + "'.")
     
     def assign(self, name, value):

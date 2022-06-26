@@ -19,6 +19,17 @@ class Expression:
 	def accept(self, visitor):
 		return visitor.visit()
 
+class If:
+	#Constructor
+	def __init__(self, condition,thenBranch,elseBranch):
+		self.condition = condition
+		self.thenBranch = thenBranch
+		self.elseBranch = elseBranch
+
+	#Visitor Method
+	def accept(self, visitor):
+		return visitor.visit()
+
 class Print:
 	#Constructor
 	def __init__(self, expression):
