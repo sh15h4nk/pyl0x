@@ -31,6 +31,7 @@ def generate_ast(filename, path = DEFAULT_PATH):
             "Binary": "left,operator,right",
             "Grouping": "expression",
             "Literal": "value",
+            "Logical": "left,operator,right",
             "Unary": "operator,right",
             "Variable": "name"
         }
@@ -40,7 +41,8 @@ def generate_ast(filename, path = DEFAULT_PATH):
             "Expression": "expression",
             "If": "condition,thenBranch,elseBranch",
             "Print": "expression",
-            "Var": "name,initializer"
+            "Var": "name,initializer",
+            "While": "condition,body"
         }
     else:
         raise SystemExit("Invalid filename")

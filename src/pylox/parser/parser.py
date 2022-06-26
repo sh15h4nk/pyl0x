@@ -1,6 +1,6 @@
 
 
-from ast import arg, stmt
+from ast import arg, operator, stmt
 from pylox.scanner.token import token
 from pylox.scanner.token_types import TOKEN_TYPES
 import pylox.parser.expr as EXP
@@ -33,6 +33,10 @@ TOKEN_TYPE.VAR = "VAR"
 TOKEN_TYPE.IDENTIFIER = "IDENTIFIER"
 TOKEN_TYPE.IF = "IF"
 TOKEN_TYPE.ELSE = "ELSE"
+TOKEN_TYPE.OR = "OR"
+TOKEN_TYPE.AND = "AND"
+TOKEN_TYPE.WHILE = "WHILE"
+TOKEN_TYPE.FOR = "FOR"
 
 
 
@@ -64,10 +68,47 @@ class parser:
         return STMT.Var(name, initializer)
     
     def statement(self):
+        if self.match(TOKEN_TYPE.FOR): return self.for_statement()
         if self.match(TOKEN_TYPE.IF): return self.if_statement()
         if self.match(TOKEN_TYPE.PRINT): return self.print_statement()
+        if self.match(TOKEN_TYPE.WHILE): return self.while_statement()
         if self.match(TOKEN_TYPE.LEFT_BRACE): return STMT.Block(self.block())
         return self.expression_statement()
+    
+    def for_statement(self):
+        self.consume(TOKEN_TYPE.LEFT_PAREN, "Expect '(' after 'for'.")
+        
+        initializer = None
+        if self.match(TOKEN_TYPE.SEMICOLON): initializer = None
+        elif self.match(TOKEN_TYPE.VAR): initializer = self.var_declaration()
+        else: initializer = self.expression_statement()
+        
+        condition = None
+        if not self.check(TOKEN_TYPE.SEMICOLON): condition = self.expression()
+        self.consume(TOKEN_TYPE.SEMICOLON, "Expect ';' after loop condition.")
+        
+        increment = None
+        if not self.check(TOKEN_TYPE.RIGHT_PAREN): increment = self.expression()
+        self.consume(TOKEN_TYPE.RIGHT_PAREN, "Expect ')' after for clauses.")
+        
+        body = self.statement()
+        if increment is not None:
+            body = STMT.Block([body, STMT.Expression(increment)])
+        
+        if condition is None: condition = EXP.Literal(True)
+        body = STMT.While(condition, body)
+        
+        if initializer is not None: body = STMT.Block([initializer, body])
+        
+        return body
+    
+    def while_statement(self):
+        self.consume(TOKEN_TYPE.LEFT_PAREN, "Expect '(' after 'while'.")
+        condition = self.expression()
+        self.consume(TOKEN_TYPE.RIGHT_PAREN, "Expect ')' after condition.")
+        body = self.statement()
+        return STMT.While(condition, body)
+        
     
     def if_statement(self):
         self.consume(TOKEN_TYPE.LEFT_PAREN, "Expect '(' after if.")
@@ -98,7 +139,7 @@ class parser:
         return statements
     
     def assignment(self):
-        expr = self.equality()
+        expr = self._or()
         if (self.match(TOKEN_TYPE.EQUAL)):
             equals = self.previous()
             value = self.assignment()
@@ -106,6 +147,22 @@ class parser:
                 name = expr.name
                 return EXP.Assign(name, value)
             self.error(equals, "Invalid assignment target")
+        return expr
+    
+    def _or(self):
+        expr = self._and()
+        while self.match(TOKEN_TYPE.OR):
+            operator = self.previous()
+            right = self._and()
+            expr = EXP.Logical(expr, operator, right)
+        return expr
+    
+    def _and(self):
+        expr = self.equality()
+        while self.match(TOKEN_TYPE.AND):
+            operator = self.previous()
+            right = self.equality()
+            expr = EXP.Logical(expr, operator, right)
         return expr
     
     def expression(self):

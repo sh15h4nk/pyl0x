@@ -40,6 +40,17 @@ class Literal:
 	def accept(self, visitor):
 		return visitor.visit()
 
+class Logical:
+	#Constructor
+	def __init__(self, left,operator,right):
+		self.left = left
+		self.operator = operator
+		self.right = right
+
+	#Visitor Method
+	def accept(self, visitor):
+		return visitor.visit()
+
 class Unary:
 	#Constructor
 	def __init__(self, operator,right):

@@ -6,8 +6,19 @@ from pylox.exceptions.runtime_error import runtime_error
 from pylox.error_reporter import run_time_error
 from pylox.environment.environment import Environment
 
+env = Environment()
 
-environment = Environment()
+def visit_while_stmt(stmt):
+    while is_truthy(evaluate(stmt.condition)): execute(stmt.body)
+    return None
+
+def visit_logical_expr(expr):
+    left = evaluate(expr.left)
+    if expr.operator.type == "OR":
+        if is_truthy(left): return left
+    else:
+        if not is_truthy(left): return left
+    return evaluate(expr.right)
 
 def visit_if_stmt(stmt):
     if is_truthy(evaluate(stmt.condition)):
@@ -18,17 +29,17 @@ def visit_if_stmt(stmt):
 
 def visit_assign_expr(expr):
     value = evaluate(expr.value)
-    environment.assign(expr.name, value)
+    env.assign(expr.name, value)
     return value
 
 def visit_var_stmt(stmt):
     value = None
     if (stmt.initializer != None): value = evaluate(stmt.initializer)
-    environment.define(stmt.name, value)
+    env.define(stmt.name, value)
     return None
 
 def visit_variable_expression(expr):
-    return environment.get(expr.name)
+    return env.get(expr.name)
 
 def visit_expression_stmt(stmt):
     evaluate(stmt.expression)
@@ -118,18 +129,18 @@ def execute(stmt):
     stmt.accept(stmt)
     
 def visit_block_stmt(stmt):
-    execute_block(stmt.statements, Environment(environment))
+    execute_block(stmt.statements, Environment(enclose=env))
     return None
 
-def execute_block(statements, env):
-    global environment
-    previous_env = environment
+def execute_block(statements, _env):
+    global env
+    previous_env = env
+    env = _env
     try:
-        environment = env
         for stmt in statements:
             execute(stmt)
-    finally:
-        environment = previous_env
+    finally:    
+        env = previous_env
 
 def interpret(statements):
     # assigning visitor method to the classes
@@ -139,12 +150,14 @@ def interpret(statements):
     EXP.Unary.visit = visit_unary_expr
     EXP.Variable.visit = visit_variable_expression
     EXP.Assign.visit = visit_assign_expr
+    EXP.Logical.visit = visit_logical_expr
     
     STMT.Expression.visit = visit_expression_stmt
     STMT.Print.visit = visit_print_stmt
     STMT.Var.visit = visit_var_stmt
     STMT.Block.visit = visit_block_stmt
     STMT.If.visit = visit_if_stmt
+    STMT.While.visit = visit_while_stmt
     
     
     try:

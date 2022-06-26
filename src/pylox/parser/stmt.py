@@ -49,3 +49,13 @@ class Var:
 	def accept(self, visitor):
 		return visitor.visit()
 
+class While:
+	#Constructor
+	def __init__(self, condition,body):
+		self.condition = condition
+		self.body = body
+
+	#Visitor Method
+	def accept(self, visitor):
+		return visitor.visit()
+
