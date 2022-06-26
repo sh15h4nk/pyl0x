@@ -1,4 +1,12 @@
+"""This class holds the structure of the environment(state) where the variables are stored in a dictionary
 
+    Raises:
+        runtime_error: In get() function if it encounters getting a undefined variable
+        runtime_error: In assign() function if it encounters assigning a undefined variable
+
+    Returns:
+        Environment: The state enclosed in a scope
+"""
 from pylox.exceptions.runtime_error import runtime_error
 
 class Environment:
