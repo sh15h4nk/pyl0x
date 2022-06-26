@@ -1,4 +1,3 @@
-from glob import glob
 from tempfile import tempdir
 import pylox.parser.expr as EXP
 import pylox.parser.stmt as STMT

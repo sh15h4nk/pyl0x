@@ -29,7 +29,14 @@ def run_file(file):
 	if src == "":
 		print("Your source file is empty :/")
 		return
-	print(type(file), src)
+	try:
+		s = scanner(src)
+		tokens = s.scan_tokens()
+		p = parser(tokens)
+		statements = p.parse()
+		i = interpret(statements)
+	except Exception as e:
+		print(e)
 
 def main():
 	parser = argparse.ArgumentParser()
