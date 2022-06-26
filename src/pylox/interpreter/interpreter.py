@@ -1,4 +1,5 @@
 from glob import glob
+from tempfile import tempdir
 import pylox.parser.expr as EXP
 import pylox.parser.stmt as STMT
 from pylox.exceptions.runtime_error import runtime_error
@@ -117,10 +118,10 @@ def execute(stmt):
     stmt.accept(stmt)
     
 def visit_block_stmt(stmt):
-    executeBlock(stmt.statements, Environment(environment))
+    execute_block(stmt.statements, Environment(environment))
     return None
 
-def executeBlock(statements, env):
+def execute_block(statements, env):
     global environment
     previous_env = environment
     try:
