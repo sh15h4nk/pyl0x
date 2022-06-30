@@ -37,6 +37,8 @@ TOKEN_TYPE.OR = "OR"
 TOKEN_TYPE.AND = "AND"
 TOKEN_TYPE.WHILE = "WHILE"
 TOKEN_TYPE.FOR = "FOR"
+TOKEN_TYPE.FUN = "FUN"
+TOKEN_TYPE.RETURN = "RETURN"
 
 
 
@@ -53,6 +55,7 @@ class parser:
     
     def declaration(self):
         try:
+            if self.match(TOKEN_TYPE.FUN): return self.function("function")
             if self.match(TOKEN_TYPE.VAR): return self.var_declaration()
             return self.statement()
         except:
@@ -71,6 +74,7 @@ class parser:
         if self.match(TOKEN_TYPE.FOR): return self.for_statement()
         if self.match(TOKEN_TYPE.IF): return self.if_statement()
         if self.match(TOKEN_TYPE.PRINT): return self.print_statement()
+        if self.match(TOKEN_TYPE.RETURN): return self.return_statement()
         if self.match(TOKEN_TYPE.WHILE): return self.while_statement()
         if self.match(TOKEN_TYPE.LEFT_BRACE): return STMT.Block(self.block())
         return self.expression_statement()
@@ -127,11 +131,34 @@ class parser:
         self.consume(TOKEN_TYPE.SEMICOLON, "Expected ';' after value.")
         return STMT.Print(value)
     
+    def return_statement(self):
+        keyword = self.previous()
+        value = None
+        if not self.check(TOKEN_TYPE.SEMICOLON): value = self.expression()
+        self.consume(TOKEN_TYPE.SEMICOLON, "Expect ';' after return value")
+        return STMT.Return(keyword, value)
+    
     def expression_statement(self):
         expr = self.expression()
-        self.consume(TOKEN_TYPE.SEMICOLON, "Expect ';' after expression")
+        self.consume(TOKEN_TYPE.SEMICOLON, "Expect ';' after expression.")
         return STMT.Expression(expr)
     
+    def function(self, kind):
+        name = self.consume(TOKEN_TYPE.IDENTIFIER, "Expect {} name".format(kind))      
+        self.consume(TOKEN_TYPE.LEFT_PAREN, "Expect '(' after {} name.".format(kind))
+        parameters = []
+        if not self.check(TOKEN_TYPE.RIGHT_PAREN):
+            parameters.append(self.consume(TOKEN_TYPE.IDENTIFIER, "Expect parameter name."))
+            while self.match(TOKEN_TYPE.COMA):
+                if len(parameters) >= 255: self.error(self.peek(), "Can't have more than 255 parameters.")
+                parameters.append(self.consume(TOKEN_TYPE.IDENTIFIER, "Expect parameter name."))
+
+        self.consume(TOKEN_TYPE.RIGHT_PAREN, "Expect ')' after parameters.")
+        self.consume(TOKEN_TYPE.LEFT_BRACE, "Expect '{' before "+ str(kind) +" body.")  ## Marking line [format string wired behaviour "Expcet '{' before {} body".format(kind)]
+        body = self.block()
+        return STMT.Function(name, parameters, body)
+        
+        
     def block(self):
         statements = []
         while not self.check(TOKEN_TYPE.RIGHT_BRACE) and not self.isAtEnd(): statements.append(self.declaration())
@@ -205,7 +232,24 @@ class parser:
             operator = self.previous()
             right = self.unary()
             return EXP.Unary(operator, right)
-        return self.primary()
+        return self.call()
+    
+    def call(self):
+        expr = self.primary()
+        while True:
+            if self.match(TOKEN_TYPE.LEFT_PAREN): expr = self.finish_call(expr)
+            else: break
+        return expr
+    
+    def finish_call(self, callee):
+        arguments = []
+        if not self.check(TOKEN_TYPE.RIGHT_PAREN):
+            arguments.append(self.expression())
+            while self.match(TOKEN_TYPE.COMA):
+                if len(arguments) >= 255:   self.error(self.peek(), "Can't have more than 255 arguments.")
+                arguments.append(self.expression())
+        paren = self.consume(TOKEN_TYPE.RIGHT_PAREN, "Expect ')' after arguments.")
+        return EXP.Call(callee, paren, arguments)
     
     def primary(self):
         if self.match(TOKEN_TYPE.FALSE): return EXP.Literal(False)

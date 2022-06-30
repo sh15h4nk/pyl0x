@@ -35,5 +35,5 @@ class Environment:
             return
         raise runtime_error(name, "Undefined variable '"+ name.lexeme + "'.")
     
-    def define(self, name, value):
+    def define(self, name, value) -> None:
         self.values.update({name.lexeme: value})

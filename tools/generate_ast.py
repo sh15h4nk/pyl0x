@@ -29,6 +29,7 @@ def generate_ast(filename, path = DEFAULT_PATH):
         classes = {
             "Assign":"name,value",
             "Binary": "left,operator,right",
+            "Call": "callee,paren,arguments",
             "Grouping": "expression",
             "Literal": "value",
             "Logical": "left,operator,right",
@@ -39,9 +40,11 @@ def generate_ast(filename, path = DEFAULT_PATH):
         classes = {
             "Block" : "statements",
             "Expression": "expression",
+            "Function": "name,params,body",
             "If": "condition,thenBranch,elseBranch",
             "Print": "expression",
             "Var": "name,initializer",
+            "Return": "keyword,value",
             "While": "condition,body"
         }
     else:

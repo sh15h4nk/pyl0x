@@ -19,6 +19,17 @@ class Expression:
 	def accept(self, visitor):
 		return visitor.visit()
 
+class Function:
+	#Constructor
+	def __init__(self, name,params,body):
+		self.name = name
+		self.params = params
+		self.body = body
+
+	#Visitor Method
+	def accept(self, visitor):
+		return visitor.visit()
+
 class If:
 	#Constructor
 	def __init__(self, condition,thenBranch,elseBranch):
@@ -44,6 +55,16 @@ class Var:
 	def __init__(self, name,initializer):
 		self.name = name
 		self.initializer = initializer
+
+	#Visitor Method
+	def accept(self, visitor):
+		return visitor.visit()
+
+class Return:
+	#Constructor
+	def __init__(self, keyword,value):
+		self.keyword = keyword
+		self.value = value
 
 	#Visitor Method
 	def accept(self, visitor):

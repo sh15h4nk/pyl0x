@@ -20,9 +20,10 @@ def repl():
 
 			except Exception as e:
 				print(e)
+				exit(0)
 	except (KeyboardInterrupt, EOFError) as e:
 		print(" Bye :)")
-		sys.exit(0)
+		exit(0)
 
 def run_file(file):
 	src = file.read()

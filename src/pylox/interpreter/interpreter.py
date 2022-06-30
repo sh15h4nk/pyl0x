@@ -1,11 +1,16 @@
-from tempfile import tempdir
+import time
+from pylox.interpreter.lox_function import Lox_function
 import pylox.parser.expr as EXP
 import pylox.parser.stmt as STMT
 from pylox.exceptions.runtime_error import runtime_error
 from pylox.error_reporter import run_time_error
 from pylox.environment.environment import Environment
+from pylox.interpreter.lox_callable import Lox_callable
+from pylox.interpreter.function_return import function_return
 
-env = Environment()
+globals = Environment()
+env = globals
+
 
 def visit_while_stmt(stmt):
     while is_truthy(evaluate(stmt.condition)): execute(stmt.body)
@@ -37,17 +42,27 @@ def visit_var_stmt(stmt):
     env.define(stmt.name, value)
     return None
 
-def visit_variable_expression(expr):
+def visit_variable_expr(expr):
     return env.get(expr.name)
 
 def visit_expression_stmt(stmt):
     evaluate(stmt.expression)
     return None
 
+def visit_function_stmt(stmt):
+    function = Lox_function(stmt, env)
+    env.define(stmt.name, function)
+    return None
+
 def visit_print_stmt(stmt):
     value = evaluate(stmt.expression)
     print(stringify(value))
     return None
+
+def visit_return_stmt(stmt):
+    value = None
+    if stmt.value: value = evaluate(stmt.value)
+    raise function_return(value)
 
 
 def visit_binary_expr(expr):
@@ -71,8 +86,20 @@ def visit_binary_expr(expr):
     elif (expr.operator.type == "BANG_EQUAL"): return not is_equal(left, right)
     elif (expr.operator.type == "EQUAL_EQUAL"): return is_equal(left, right)
 
-
     return None
+
+def visit_call_expr(expr):
+    callee = evaluate(expr.callee)
+    arguments = [evaluate(arg) for arg in expr.arguments]
+    
+    if not isinstance(callee, Lox_callable):
+        raise runtime_error(expr.paren, "Can only call functions and classes.")
+    
+    function = callee
+    if len(arguments) != function.arity():
+        raise runtime_error(expr.paren, "Expected {} arguments but got {}.".format(function.arity(), len(arguments)))
+
+    return function.call(globals, arguments)
 
 
 def check_number_operands(operator, left, right):
@@ -144,19 +171,33 @@ def execute_block(statements, _env):
 def interpret(statements):
     # assigning visitor method to the classes
     EXP.Binary.visit = visit_binary_expr
+    EXP.Call.visit = visit_call_expr
     EXP.Grouping.visit = visit_grouping_expr
     EXP.Literal.visit = visit_literal_expr
     EXP.Unary.visit = visit_unary_expr
-    EXP.Variable.visit = visit_variable_expression
+    EXP.Variable.visit = visit_variable_expr
     EXP.Assign.visit = visit_assign_expr
     EXP.Logical.visit = visit_logical_expr
     
     STMT.Expression.visit = visit_expression_stmt
+    STMT.Return.visit = visit_return_stmt
+    STMT.Function.visit = visit_function_stmt
     STMT.Print.visit = visit_print_stmt
     STMT.Var.visit = visit_var_stmt
     STMT.Block.visit = visit_block_stmt
     STMT.If.visit = visit_if_stmt
     STMT.While.visit = visit_while_stmt
+    
+    # def c_arity():
+    #     return 0
+    # def c_call(interepreter, globals):
+    #     return time.time()
+        
+    # clock_object = Lox_callable()
+    # clock_object.arity = c_arity
+    # clock_object.call = c_call
+    # globals.define("clock",clock_object)
+    
     
     
     try:

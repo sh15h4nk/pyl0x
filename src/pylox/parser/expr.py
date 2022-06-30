@@ -22,6 +22,17 @@ class Binary:
 	def accept(self, visitor):
 		return visitor.visit()
 
+class Call:
+	#Constructor
+	def __init__(self, callee,paren,arguments):
+		self.callee = callee
+		self.paren = paren
+		self.arguments = arguments
+
+	#Visitor Method
+	def accept(self, visitor):
+		return visitor.visit()
+
 class Grouping:
 	#Constructor
 	def __init__(self, expression):
