@@ -1,26 +1,17 @@
-import sys
-import argparse
 
+import argparse
 from pylox.scanner.scanner import scanner
 from pylox.parser.parser import parser
 from pylox.interpreter.interpreter import interpret
 from pylox.parser.ast_printer import ast_printer
+from pylox.resolver.resolver import resolve
+from pylox.error_reporter import had_error, had_runtime_error
 
-def repl():
+def run_prompt():
 	try:
 		while True:
 			cmd = input("> ")
-			try:
-				s = scanner(cmd)
-				tokens = s.scan_tokens()
-				p = parser(tokens)
-				statements = p.parse()
-				i = interpret(statements)
-				exit(0)
-
-			except Exception as e:
-				print(e)
-				exit(0)
+			run(cmd)
 	except (KeyboardInterrupt, EOFError) as e:
 		print(" Bye :)")
 		exit(0)
@@ -30,14 +21,25 @@ def run_file(file):
 	if src == "":
 		print("Your source file is empty :/")
 		return
+
+def run(src):
 	try:
 		s = scanner(src)
 		tokens = s.scan_tokens()
+		if (had_error): exit(0)
+		if had_runtime_error: exit(0)
 		p = parser(tokens)
 		statements = p.parse()
+		if had_runtime_error: exit(0)
+		if (had_error): exit(0)
+		resolve(statements)
+		if (had_error): exit(0)
+		if had_runtime_error: exit(0)
 		i = interpret(statements)
 	except Exception as e:
 		print(e)
+     
+    
 
 def main():
 	parser = argparse.ArgumentParser()
@@ -46,7 +48,7 @@ def main():
 	args = parser.parse_args()
 
 	if args.infile is None:
-		repl()
+		run_prompt()
 	else:
 		run_file(args.infile)
 

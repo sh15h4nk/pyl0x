@@ -7,9 +7,11 @@ from pylox.error_reporter import run_time_error
 from pylox.environment.environment import Environment
 from pylox.interpreter.lox_callable import Lox_callable
 from pylox.interpreter.function_return import function_return
+from pylox.scanner.token import token
 
 globals = Environment()
 env = globals
+locals = {}
 
 
 def visit_while_stmt(stmt):
@@ -33,7 +35,10 @@ def visit_if_stmt(stmt):
 
 def visit_assign_expr(expr):
     value = evaluate(expr.value)
-    env.assign(expr.name, value)
+    
+    dist = locals.get(expr)
+    if dist: env.assign_at(dist, expr.name, value)
+    else: globals.assign(expr.name, value)
     return value
 
 def visit_var_stmt(stmt):
@@ -43,7 +48,14 @@ def visit_var_stmt(stmt):
     return None
 
 def visit_variable_expr(expr):
-    return env.get(expr.name)
+    return look_up_variable(expr.name, expr)
+
+def look_up_variable(name: token, expr: EXP):
+    dist = locals.get(expr)
+    if dist:
+        return env.get_at(dist, name)
+    else:
+        return globals.get(name)
 
 def visit_expression_stmt(stmt):
     evaluate(stmt.expression)
@@ -153,6 +165,9 @@ def stringify(obj):
 
 def execute(stmt):
     stmt.accept(stmt)
+    
+def resolve(expr: EXP, depth: int):
+    locals[expr] = depth
     
 def visit_block_stmt(stmt):
     execute_block(stmt.statements, Environment(enclose=env))

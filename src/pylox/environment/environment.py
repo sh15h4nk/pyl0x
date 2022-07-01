@@ -8,6 +8,7 @@
         Environment: The state enclosed in a scope
 """
 from pylox.exceptions.runtime_error import runtime_error
+from pylox.scanner.token import token
 
 class Environment:
     enclosing = None
@@ -37,3 +38,15 @@ class Environment:
     
     def define(self, name, value) -> None:
         self.values.update({name.lexeme: value})
+    
+    def ancestor(self, distance: int):
+        environment = self
+        for i in range(distance):
+            environment = environment.enclosing
+        return environment
+        
+    def get_at(self, distance: int, name: token):
+        return self.ancestor(distance).values.get(name.lexeme)
+    
+    def assign_at(self, distance: int, name: token, value) -> None:
+        self.ancestor(distance).values[name.lexeme] = value
