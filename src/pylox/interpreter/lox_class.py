@@ -6,8 +6,9 @@ from pylox.interpreter.lox_instance import LoxInstance
 
 
 class LoxClass(Lox_callable):
-    def __init__(self, name, methods: dict) -> None:
+    def __init__(self, name, superclass, methods: dict) -> None:
         self.name = name
+        self.superclass = superclass
         self.methods: dict = methods
         
     def call(self, env, arguments):
@@ -18,6 +19,7 @@ class LoxClass(Lox_callable):
     
     def find_method(self, name):
         if name in self.methods: return self.methods[name]
+        if self.superclass: return self.superclass.find_method(name)
         return None
     
     def arity(self):

@@ -15,6 +15,7 @@ class FUNCTION_TYPES(Enum):
 class CLASS_TYPE(Enum):
     NONE = 0
     CLASS = 1
+    SUBCLASS = 2
 
 current_class = CLASS_TYPE.NONE
 current_function = FUNCTION_TYPES.NONE
@@ -35,6 +36,14 @@ def visit_class_stmt(stmt: STMT.Class) -> None:
     declare(stmt.name)
     define(stmt.name)
     
+    if stmt.superclass and stmt.name.lexeme == stmt.superclass.name.lexeme: Lox_error(stmt.superclass, "A class can't inherit from itself.")
+    if stmt.superclass:
+        current_class = CLASS_TYPE.SUBCLASS
+        resolve(stmt.superclass)
+    if stmt.superclass:
+        begin_scope()
+        scopes[-1] = {"super": True}
+    
     begin_scope()
     scopes[-1] = {"this": True}
     
@@ -44,12 +53,20 @@ def visit_class_stmt(stmt: STMT.Class) -> None:
         resolve_function(method, declaration)
     end_scope()
     
+    if stmt.superclass: end_scope()
+    
     current_class = enclosing_class
     return None
 
 def visit_this_expr(expr: EXP.This) -> None:
     if current_class == CLASS_TYPE.NONE:
         Lox_error(expr.keyword, "Can't use 'this' keyword outside of a class")
+    resolveLocal(expr, expr.keyword)
+    return None
+
+def visit_super_expr(expr: EXP.Super) -> None:
+    if current_class is CLASS_TYPE.NONE: Lox_error(expr.keyword, "Can't use 'super' outside of a class")
+    elif current_class is not CLASS_TYPE.SUBCLASS: Lox_error(expr.keyword, "Can't use 'super' in a class with no superclass.")
     resolveLocal(expr, expr.keyword)
     return None
 
@@ -195,6 +212,7 @@ EXP.Get.visit = visit_get_expr
 EXP.Grouping.visit = visit_grouping_expr
 EXP.Literal.visit = visit_literal_expr
 EXP.Set.visit = visit_set_expr
+EXP.Super.visit = visit_super_expr
 EXP.This.visit = visit_this_expr
 EXP.Unary.visit = visit_unary_expr
 EXP.Variable.visit = visit_variable_expr

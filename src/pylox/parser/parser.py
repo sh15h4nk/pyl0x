@@ -1,6 +1,6 @@
 
 
-from ast import arg, operator, stmt
+from ast import arg, keyword, operator, stmt
 from pylox.scanner.token import token
 from pylox.scanner.token_types import TOKEN_TYPES
 import pylox.parser.expr as EXP
@@ -41,6 +41,7 @@ TOKEN_TYPE.FUN = "FUN"
 TOKEN_TYPE.RETURN = "RETURN"
 TOKEN_TYPE.CLASS = "CLASS"
 TOKEN_TYPE.THIS = "THIS"
+TOKEN_TYPE.SUPER = "SUPER"
 
 
 
@@ -66,7 +67,13 @@ class parser:
             return None
     
     def class_declaration(self):
-        name = self.consume(TOKEN_TYPE.IDENTIFIER, "Expected class name")
+        name = self.consume(TOKEN_TYPE.IDENTIFIER, "Expected class name.")
+        
+        superclass = None
+        if self.match(TOKEN_TYPE.LESS):
+            self.consume(TOKEN_TYPE.IDENTIFIER, "Expect super class name.")
+            superclass = EXP.Variable(self.previous())
+        
         self.consume(TOKEN_TYPE.LEFT_BRACE, "Expect '{' before class body.")
         methods = []
         
@@ -74,7 +81,7 @@ class parser:
             methods.append(self.function("method"))
         
         self.consume(TOKEN_TYPE.RIGHT_BRACE, "Expect '}' after class body.")
-        return STMT.Class(name, methods)
+        return STMT.Class(name, superclass, methods)
     
     def var_declaration(self):
         name = self.consume(TOKEN_TYPE.IDENTIFIER, "Expected variable name")
@@ -272,6 +279,11 @@ class parser:
         if self.match(TOKEN_TYPE.TRUE): return EXP.Literal(True)
         if self.match(TOKEN_TYPE.NIL): return EXP.Literal(None)
         if self.match(TOKEN_TYPE.NUMBER, TOKEN_TYPE.STRING): return EXP.Literal(self.previous().literal)
+        if self.match(TOKEN_TYPE.SUPER):
+            keyword = self.previous()
+            self.consume(TOKEN_TYPE.DOT, "Expect '.' after 'super'.")
+            method = self.consume(TOKEN_TYPE.IDENTIFIER, "Expect superclass method name")
+            return EXP.Super(keyword, method)
         if self.match(TOKEN_TYPE.THIS): return EXP.This(self.previous())
         if self.match(TOKEN_TYPE.IDENTIFIER): return EXP.Variable(self.previous())
         if self.match(TOKEN_TYPE.LEFT_PAREN):

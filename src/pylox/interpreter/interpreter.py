@@ -1,3 +1,4 @@
+from threading import local
 import time
 from pylox.interpreter.lox_function import Lox_function
 from pylox.interpreter.lox_instance import LoxInstance
@@ -105,10 +106,8 @@ def visit_binary_expr(expr):
 def visit_call_expr(expr):
     callee = evaluate(expr.callee)
     arguments = [evaluate(arg) for arg in expr.arguments]
-    
     if not isinstance(callee, Lox_callable):
         raise runtime_error(expr.paren, "Can only call functions and classes.")
-    
     function = callee
     if len(arguments) != function.arity():
         raise runtime_error(expr.paren, "Expected {} arguments but got {}.".format(function.arity(), len(arguments)))
@@ -131,8 +130,6 @@ def visit_set_expr(expr: EXP.Set):
 def check_number_operands(operator, left, right):
     if is_float(left) and is_float(right): return True
     raise runtime_error(operator, "Operands must be numbers.")
-
-
 
 def visit_unary_expr(expr):
     right = evaluate(expr.right)
@@ -188,19 +185,40 @@ def visit_block_stmt(stmt):
     return None
 
 def visit_class_stmt(stmt: STMT.Class):
+    global env
+    superclass = None
+    if stmt.superclass:
+        superclass = evaluate(stmt.superclass)
+        if type(superclass) is not LoxClass: raise runtime_error(stmt.superclass.name, "Superclass must be a class.")
     env.define(stmt.name, None)
+    
+    if stmt.superclass:
+        env = Environment(env)
+        env.define("super", superclass)
     
     methods = {}
     for method in stmt.methods:
         function = Lox_function(method, env, method.name.lexeme == "init")
         methods[method.name.lexeme] = function
     
-    klass = LoxClass(stmt.name.lexeme, methods)
+    klass = LoxClass(stmt.name.lexeme, superclass, methods)
+    
+    if superclass:
+        env = env.enclosing
+    
     env.assign(stmt.name, klass)
     
 def visit_this_expr(expr: EXP.This):
     return look_up_variable(expr.keyword, expr)
     
+def visit_super_expr(expr: EXP.Super):
+    dist = locals.get(expr)
+    superclass = env.get_at(dist, "super")
+    object = env.get_at(dist - 1, "this")
+    
+    method = superclass.find_method(expr.method.lexeme)
+    if not method: raise runtime_error(expr.method, "Undefined property '{}'.".format(expr.method.lexeme))
+    return method.bind(object)
 
 def execute_block(statements, _env):
     global env
@@ -222,6 +240,7 @@ def interpret(statements):
     EXP.Grouping.visit = visit_grouping_expr
     EXP.Literal.visit = visit_literal_expr
     EXP.Set.visit = visit_set_expr
+    EXP.Super.visit = visit_super_expr
     EXP.This.visit = visit_this_expr
     EXP.Unary.visit = visit_unary_expr
     EXP.Variable.visit = visit_variable_expr

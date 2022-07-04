@@ -83,6 +83,16 @@ class Set:
 	def accept(self, visitor):
 		return visitor.visit()
 
+class Super:
+	#Constructor
+	def __init__(self, keyword,method):
+		self.keyword = keyword
+		self.method = method
+
+	#Visitor Method
+	def accept(self, visitor):
+		return visitor.visit()
+
 class This:
 	#Constructor
 	def __init__(self, keyword):
