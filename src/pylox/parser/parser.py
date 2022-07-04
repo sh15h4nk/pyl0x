@@ -39,6 +39,8 @@ TOKEN_TYPE.WHILE = "WHILE"
 TOKEN_TYPE.FOR = "FOR"
 TOKEN_TYPE.FUN = "FUN"
 TOKEN_TYPE.RETURN = "RETURN"
+TOKEN_TYPE.CLASS = "CLASS"
+TOKEN_TYPE.THIS = "THIS"
 
 
 
@@ -55,12 +57,24 @@ class parser:
     
     def declaration(self):
         try:
+            if self.match(TOKEN_TYPE.CLASS): return self.class_declaration()
             if self.match(TOKEN_TYPE.FUN): return self.function("function")
             if self.match(TOKEN_TYPE.VAR): return self.var_declaration()
             return self.statement()
         except:
             self.synchronize()
             return None
+    
+    def class_declaration(self):
+        name = self.consume(TOKEN_TYPE.IDENTIFIER, "Expected class name")
+        self.consume(TOKEN_TYPE.LEFT_BRACE, "Expect '{' before class body.")
+        methods = []
+        
+        while not self.check(TOKEN_TYPE.RIGHT_BRACE) and not self.isAtEnd():
+            methods.append(self.function("method"))
+        
+        self.consume(TOKEN_TYPE.RIGHT_BRACE, "Expect '}' after class body.")
+        return STMT.Class(name, methods)
     
     def var_declaration(self):
         name = self.consume(TOKEN_TYPE.IDENTIFIER, "Expected variable name")
@@ -144,7 +158,7 @@ class parser:
         return STMT.Expression(expr)
     
     def function(self, kind):
-        name = self.consume(TOKEN_TYPE.IDENTIFIER, "Expect {} name".format(kind))      
+        name = self.consume(TOKEN_TYPE.IDENTIFIER, "Expect {} name".format(kind))
         self.consume(TOKEN_TYPE.LEFT_PAREN, "Expect '(' after {} name.".format(kind))
         parameters = []
         if not self.check(TOKEN_TYPE.RIGHT_PAREN):
@@ -167,12 +181,11 @@ class parser:
     
     def assignment(self):
         expr = self._or()
-        if (self.match(TOKEN_TYPE.EQUAL)):
+        if self.match(TOKEN_TYPE.EQUAL):
             equals = self.previous()
             value = self.assignment()
-            if (type(expr) == EXP.Variable):
-                name = expr.name
-                return EXP.Assign(name, value)
+            if type(expr) == EXP.Variable: return EXP.Assign(expr.name, value)
+            elif type(expr) == EXP.Get: return EXP.Set(expr.object, expr.name, value)
             self.error(equals, "Invalid assignment target")
         return expr
     
@@ -238,6 +251,9 @@ class parser:
         expr = self.primary()
         while True:
             if self.match(TOKEN_TYPE.LEFT_PAREN): expr = self.finish_call(expr)
+            elif self.match(TOKEN_TYPE.DOT):
+                name = self.consume(TOKEN_TYPE.IDENTIFIER, "Expect property name after '.'.")
+                expr = EXP.Get(expr, name)
             else: break
         return expr
     
@@ -256,6 +272,7 @@ class parser:
         if self.match(TOKEN_TYPE.TRUE): return EXP.Literal(True)
         if self.match(TOKEN_TYPE.NIL): return EXP.Literal(None)
         if self.match(TOKEN_TYPE.NUMBER, TOKEN_TYPE.STRING): return EXP.Literal(self.previous().literal)
+        if self.match(TOKEN_TYPE.THIS): return EXP.This(self.previous())
         if self.match(TOKEN_TYPE.IDENTIFIER): return EXP.Variable(self.previous())
         if self.match(TOKEN_TYPE.LEFT_PAREN):
             expr = self.expression()

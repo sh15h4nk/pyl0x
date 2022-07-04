@@ -9,6 +9,14 @@ from pylox.scanner.token import token
 class FUNCTION_TYPES(Enum):
     NONE = 0
     FUNCTION = 1
+    INITIALIZER = 2
+    METHOD = 3
+
+class CLASS_TYPE(Enum):
+    NONE = 0
+    CLASS = 1
+
+current_class = CLASS_TYPE.NONE
 current_function = FUNCTION_TYPES.NONE
 scopes = []
 
@@ -17,6 +25,32 @@ def visit_block_stmt(stmt: STMT.Block) -> None:
     begin_scope()
     resolve(stmt.statements)
     end_scope()
+    return None
+
+def visit_class_stmt(stmt: STMT.Class) -> None:
+    global current_class
+    enclosing_class = current_class
+    current_class = CLASS_TYPE.CLASS
+    
+    declare(stmt.name)
+    define(stmt.name)
+    
+    begin_scope()
+    scopes[-1] = {"this": True}
+    
+    for method in stmt.methods:
+        declaration = FUNCTION_TYPES.METHOD
+        if method.name.lexeme == "init": declaration = FUNCTION_TYPES.INITIALIZER
+        resolve_function(method, declaration)
+    end_scope()
+    
+    current_class = enclosing_class
+    return None
+
+def visit_this_expr(expr: EXP.This) -> None:
+    if current_class == CLASS_TYPE.NONE:
+        Lox_error(expr.keyword, "Can't use 'this' keyword outside of a class")
+    resolveLocal(expr, expr.keyword)
     return None
 
 def visit_expression_stmt(stmt: STMT.Expression) -> None:
@@ -63,6 +97,8 @@ def visit_return_stmt(stmt: STMT.Return) -> None:
     if current_function == FUNCTION_TYPES.NONE:
         Lox_error(stmt.keyword, "Can't return from top level code.")
     if stmt.value: resolve(stmt.value)
+    if current_function == FUNCTION_TYPES.INITIALIZER:
+        Lox_error(stmt.keyword, "Can't return a value from an initializer.")
     return None
 
 def visit_while_stmt(stmt: STMT.While) -> None:
@@ -79,6 +115,15 @@ def visit_call_expr(expr: EXP.Call) -> None:
     resolve(expr.callee)
     for arg in expr.arguments:
         resolve(arg)
+    return None
+
+def visit_get_expr(expr: EXP.Get) -> None:
+    resolve(expr.object)
+    return None
+
+def visit_set_expr(expr: EXP.Set) -> None:
+    resolve(expr.value)
+    resolve(expr.object)
     return None
 
 def visit_grouping_expr(expr: EXP.Grouping) -> None:
@@ -143,16 +188,20 @@ def resolveLocal(expr: EXP, name: token):
         
 
  # assigning visitor method to the classes
+EXP.Assign.visit = visit_assign_expr
 EXP.Binary.visit = visit_binary_expr
 EXP.Call.visit = visit_call_expr
+EXP.Get.visit = visit_get_expr
 EXP.Grouping.visit = visit_grouping_expr
 EXP.Literal.visit = visit_literal_expr
+EXP.Set.visit = visit_set_expr
+EXP.This.visit = visit_this_expr
 EXP.Unary.visit = visit_unary_expr
 EXP.Variable.visit = visit_variable_expr
-EXP.Assign.visit = visit_assign_expr
 EXP.Logical.visit = visit_logical_expr
 
 STMT.Expression.visit = visit_expression_stmt
+STMT.Class.visit = visit_class_stmt
 STMT.Return.visit = visit_return_stmt
 STMT.Function.visit = visit_function_stmt
 STMT.Print.visit = visit_print_stmt

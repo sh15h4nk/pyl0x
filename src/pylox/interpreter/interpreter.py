@@ -1,5 +1,6 @@
 import time
 from pylox.interpreter.lox_function import Lox_function
+from pylox.interpreter.lox_instance import LoxInstance
 import pylox.parser.expr as EXP
 import pylox.parser.stmt as STMT
 from pylox.exceptions.runtime_error import runtime_error
@@ -8,6 +9,7 @@ from pylox.environment.environment import Environment
 from pylox.interpreter.lox_callable import Lox_callable
 from pylox.interpreter.function_return import function_return
 from pylox.scanner.token import token
+from pylox.interpreter.lox_class import LoxClass
 
 globals = Environment()
 env = globals
@@ -43,7 +45,7 @@ def visit_assign_expr(expr):
 
 def visit_var_stmt(stmt):
     value = None
-    if (stmt.initializer != None): value = evaluate(stmt.initializer)
+    if stmt.initializer: value = evaluate(stmt.initializer)
     env.define(stmt.name, value)
     return None
 
@@ -52,7 +54,7 @@ def visit_variable_expr(expr):
 
 def look_up_variable(name: token, expr: EXP):
     dist = locals.get(expr)
-    if dist:
+    if dist is not None:
         return env.get_at(dist, name)
     else:
         return globals.get(name)
@@ -62,7 +64,7 @@ def visit_expression_stmt(stmt):
     return None
 
 def visit_function_stmt(stmt):
-    function = Lox_function(stmt, env)
+    function = Lox_function(stmt, env, False)
     env.define(stmt.name, function)
     return None
 
@@ -113,6 +115,18 @@ def visit_call_expr(expr):
 
     return function.call(globals, arguments)
 
+def visit_get_expr(expr: EXP.Get):
+    object = evaluate(expr.object)
+    if type(object) is LoxInstance: return object.get(expr.name)
+    raise runtime_error(expr.name, "Only instances have property")
+
+def visit_set_expr(expr: EXP.Set):
+    object = evaluate(expr.object)
+    if type(object) is not LoxInstance: raise runtime_error(expr.name, "Only instances have fields")
+    
+    value = evaluate(expr.value)
+    object.set(expr.name, value)
+    return value
 
 def check_number_operands(operator, left, right):
     if is_float(left) and is_float(right): return True
@@ -173,6 +187,21 @@ def visit_block_stmt(stmt):
     execute_block(stmt.statements, Environment(enclose=env))
     return None
 
+def visit_class_stmt(stmt: STMT.Class):
+    env.define(stmt.name, None)
+    
+    methods = {}
+    for method in stmt.methods:
+        function = Lox_function(method, env, method.name.lexeme == "init")
+        methods[method.name.lexeme] = function
+    
+    klass = LoxClass(stmt.name.lexeme, methods)
+    env.assign(stmt.name, klass)
+    
+def visit_this_expr(expr: EXP.This):
+    return look_up_variable(expr.keyword, expr)
+    
+
 def execute_block(statements, _env):
     global env
     previous_env = env
@@ -180,21 +209,26 @@ def execute_block(statements, _env):
     try:
         for stmt in statements:
             execute(stmt)
+            
     finally:    
         env = previous_env
 
 def interpret(statements):
     # assigning visitor method to the classes
+    EXP.Assign.visit = visit_assign_expr
     EXP.Binary.visit = visit_binary_expr
     EXP.Call.visit = visit_call_expr
+    EXP.Get.visit = visit_get_expr
     EXP.Grouping.visit = visit_grouping_expr
     EXP.Literal.visit = visit_literal_expr
+    EXP.Set.visit = visit_set_expr
+    EXP.This.visit = visit_this_expr
     EXP.Unary.visit = visit_unary_expr
     EXP.Variable.visit = visit_variable_expr
-    EXP.Assign.visit = visit_assign_expr
     EXP.Logical.visit = visit_logical_expr
-    
+
     STMT.Expression.visit = visit_expression_stmt
+    STMT.Class.visit = visit_class_stmt
     STMT.Return.visit = visit_return_stmt
     STMT.Function.visit = visit_function_stmt
     STMT.Print.visit = visit_print_stmt
@@ -220,6 +254,7 @@ def interpret(statements):
             execute(stmt)
     except runtime_error as e:
         run_time_error(e)
+        
 
 
 if __name__ == "__main__":

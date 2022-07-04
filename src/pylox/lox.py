@@ -5,7 +5,6 @@ from pylox.parser.parser import parser
 from pylox.interpreter.interpreter import interpret
 from pylox.parser.ast_printer import ast_printer
 from pylox.resolver.resolver import resolve
-from pylox.error_reporter import had_error, had_runtime_error
 
 def run_prompt():
 	try:
@@ -26,15 +25,9 @@ def run(src):
 	try:
 		s = scanner(src)
 		tokens = s.scan_tokens()
-		if (had_error): exit(0)
-		if had_runtime_error: exit(0)
 		p = parser(tokens)
 		statements = p.parse()
-		if had_runtime_error: exit(0)
-		if (had_error): exit(0)
 		resolve(statements)
-		if (had_error): exit(0)
-		if had_runtime_error: exit(0)
 		i = interpret(statements)
 	except Exception as e:
 		print(e)

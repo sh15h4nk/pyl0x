@@ -33,6 +33,16 @@ class Call:
 	def accept(self, visitor):
 		return visitor.visit()
 
+class Get:
+	#Constructor
+	def __init__(self, object,name):
+		self.object = object
+		self.name = name
+
+	#Visitor Method
+	def accept(self, visitor):
+		return visitor.visit()
+
 class Grouping:
 	#Constructor
 	def __init__(self, expression):
@@ -57,6 +67,26 @@ class Logical:
 		self.left = left
 		self.operator = operator
 		self.right = right
+
+	#Visitor Method
+	def accept(self, visitor):
+		return visitor.visit()
+
+class Set:
+	#Constructor
+	def __init__(self, object,name,value):
+		self.object = object
+		self.name = name
+		self.value = value
+
+	#Visitor Method
+	def accept(self, visitor):
+		return visitor.visit()
+
+class This:
+	#Constructor
+	def __init__(self, keyword):
+		self.keyword = keyword
 
 	#Visitor Method
 	def accept(self, visitor):

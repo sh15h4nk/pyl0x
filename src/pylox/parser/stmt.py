@@ -10,6 +10,16 @@ class Block:
 	def accept(self, visitor):
 		return visitor.visit()
 
+class Class:
+	#Constructor
+	def __init__(self, name,methods):
+		self.name = name
+		self.methods = methods
+
+	#Visitor Method
+	def accept(self, visitor):
+		return visitor.visit()
+
 class Expression:
 	#Constructor
 	def __init__(self, expression):
