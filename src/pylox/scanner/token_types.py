@@ -1,7 +1,5 @@
 from types import SimpleNamespace
 
-
-
 # Single-Character tokens
 single_char_token = {
     "LEFT_PAREN" : "(",
