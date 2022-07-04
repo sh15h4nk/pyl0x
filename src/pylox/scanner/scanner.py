@@ -2,7 +2,7 @@
 
 from typing import List, Type
 from pylox.scanner.token_types import TOKEN_TYPES, single_char_token, multi_char_token, keywords
-from pylox.scanner.token import token
+from pylox.scanner.token import Token
 from pylox.error_reporter import report
 from decimal import Decimal
 
@@ -28,7 +28,7 @@ class scanner:
         """
         return "source: {} tokens: {}".format(self.source, self.tokens)
 
-    def scan_tokens(self) -> List[Type[token]]:
+    def scan_tokens(self) -> List[Type[Token]]:
         """Scans all the tokens from the source.
 
         Returns:
@@ -37,7 +37,7 @@ class scanner:
         while(not self.is_at_end()):
             self.start = self.current
             self.scan_token()
-        self.tokens.append(token("EOF", "", None, self.line))
+        self.tokens.append(Token("EOF", "", None, self.line))
         return self.tokens
 
     def is_at_end(self) -> bool:
@@ -131,7 +131,7 @@ class scanner:
         if (self.current + 1 >= len(self.source)): return "\0"
         return self.source[self.current +1]
     
-    def match(self, expected: token) -> bool:
+    def match(self, expected: Token) -> bool:
         """To match the current token with the expected.
 
         Args:
@@ -168,4 +168,4 @@ class scanner:
             literal (str): string literal of the token (source)
         """
         lexeme = self.source[self.start: self.current]
-        self.tokens.append(token(type, lexeme, literal, self.line))
+        self.tokens.append(Token(type, lexeme, literal, self.line))

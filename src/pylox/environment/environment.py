@@ -8,7 +8,7 @@
         Environment: The state enclosed in a scope
 """
 from pylox.exceptions.runtime_error import runtime_error
-from pylox.scanner.token import token
+from pylox.scanner.token import Token
 
 class Environment:
     enclosing = None
@@ -22,14 +22,14 @@ class Environment:
         
     
     def get(self, name):
-        if type(name) is str: name = token(None, name, None, None)
+        if type(name) is str: name = Token(None, name, None, None)
         if name.lexeme in self.values:
             return self.values.get(name.lexeme)
         if self.enclosing is not None: return self.enclosing.get(name)
         raise runtime_error(name, "Undefined variable '" + name.lexeme + "'.")
     
     def assign(self, name, value) -> None:
-        if type(name) is str: name = token(None, name, None, None)
+        if type(name) is str: name = Token(None, name, None, None)
         if name.lexeme in self.values:
             self.values[name.lexeme] = value
             return
@@ -39,7 +39,7 @@ class Environment:
         raise runtime_error(name, "Undefined variable '"+ name.lexeme + "'.")
     
     def define(self, name, value) -> None:
-        if type(name) is str: name = token(None, name, None, None)
+        if type(name) is str: name = Token(None, name, None, None)
         self.values.update({name.lexeme: value})
     
     def ancestor(self, distance: int):
@@ -48,10 +48,10 @@ class Environment:
             environment = environment.enclosing
         return environment
         
-    def get_at(self, distance: int, name: token):
-        if type(name) is str: name = token(None, name, None, None)
+    def get_at(self, distance: int, name: Token):
+        if type(name) is str: name = Token(None, name, None, None)
         return self.ancestor(distance).values.get(name.lexeme)
     
-    def assign_at(self, distance: int, name: token, value) -> None:
-        if type(name) is str: name = token(None, name, None, None)
+    def assign_at(self, distance: int, name: Token, value) -> None:
+        if type(name) is str: name = Token(None, name, None, None)
         self.ancestor(distance).values[name.lexeme] = value

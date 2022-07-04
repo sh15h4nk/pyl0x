@@ -1,7 +1,7 @@
 
 
 from ast import arg, keyword, operator, stmt
-from pylox.scanner.token import token
+from pylox.scanner.token import Token
 from pylox.scanner.token_types import TOKEN_TYPES
 import pylox.parser.expr as EXP
 import pylox.parser.stmt as STMT

@@ -9,7 +9,7 @@ from pylox.error_reporter import run_time_error
 from pylox.environment.environment import Environment
 from pylox.interpreter.lox_callable import Lox_callable
 from pylox.interpreter.function_return import function_return
-from pylox.scanner.token import token
+from pylox.scanner.token import Token
 from pylox.interpreter.lox_class import LoxClass
 
 globals = Environment()
@@ -53,7 +53,7 @@ def visit_var_stmt(stmt):
 def visit_variable_expr(expr):
     return look_up_variable(expr.name, expr)
 
-def look_up_variable(name: token, expr: EXP):
+def look_up_variable(name: Token, expr: EXP):
     dist = locals.get(expr)
     if dist is not None:
         return env.get_at(dist, name)

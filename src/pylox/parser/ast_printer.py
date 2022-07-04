@@ -1,6 +1,6 @@
 
 import pylox.parser.expr as EXP
-from pylox.scanner.token import token
+from pylox.scanner.token import Token
 from pylox.scanner.token_types import TOKEN_TYPES
 
 
@@ -34,6 +34,6 @@ def ast_printer(expr):
 
 
 if __name__ == "__main__":
-    expression = EXP.Binary(EXP.Unary(token(TOKEN_TYPES.MINUS, "-", None, 1), EXP.Literal(123)), token(TOKEN_TYPES.STAR, "*", None, 1), EXP.Grouping(EXP.Literal(45.67)))
+    expression = EXP.Binary(EXP.Unary(Token(TOKEN_TYPES.MINUS, "-", None, 1), EXP.Literal(123)), Token(TOKEN_TYPES.STAR, "*", None, 1), EXP.Grouping(EXP.Literal(45.67)))
     ast_printer(expression)
 

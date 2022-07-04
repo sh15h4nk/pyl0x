@@ -1,10 +1,9 @@
 from enum import Enum
-from tokenize import Token
 from pylox.error_reporter import error as Lox_error
 import pylox.parser.expr as EXP
 import pylox.parser.stmt as STMT
 from pylox.interpreter.interpreter import resolve as interpreter_resolve
-from pylox.scanner.token import token
+from pylox.scanner.token import Token
 
 class FUNCTION_TYPES(Enum):
     NONE = 0
@@ -185,19 +184,19 @@ def begin_scope() -> None:
 def end_scope() -> None:
     scopes.pop()
 
-def declare(name: token) -> None:
+def declare(name: Token) -> None:
     if not len(scopes):
         return None
     if name.lexeme in scopes[-1]:
         Lox_error(name, "Already a variable with this name exists in the scope.")
     scopes[-1] = {name.lexeme: False}
 
-def define(name: token) -> None:
+def define(name: Token) -> None:
     if not len(scopes):
         return None
     scopes[-1] = {name.lexeme: True}
 
-def resolveLocal(expr: EXP, name: token):
+def resolveLocal(expr: EXP, name: Token):
     for i in range(len(scopes) -1 ,-1, -1):
         if name.lexeme in scopes[i]:
             interpreter_resolve(expr, len(scopes)-1-i)
