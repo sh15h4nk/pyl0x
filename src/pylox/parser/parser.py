@@ -1,6 +1,5 @@
 
 
-from ast import arg, keyword, operator, stmt
 from pylox.scanner.token import Token
 from pylox.scanner.token_types import TOKEN_TYPES
 import pylox.parser.expr as EXP
@@ -9,6 +8,7 @@ from pylox.error_reporter import error as lox_error
 from types import SimpleNamespace
 
 TOKEN_TYPE = SimpleNamespace(**TOKEN_TYPES.__dict__)
+print(TOKEN_TYPE)
 TOKEN_TYPE.BANG_EQUAL = "BANG_EQUAL"
 TOKEN_TYPE.EQUAL_EQUAL = "EQUAL_EQUAL"
 TOKEN_TYPE.GREATER = "GREATER"
