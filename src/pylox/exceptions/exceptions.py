@@ -15,5 +15,7 @@ class RuntimeError(Exception):
         self.token = token
 
 class ParseError(Exception):
-    pass
+    def __init__(self, token, message) -> None:
+        super().__init__(message)
+        self.token = token
         

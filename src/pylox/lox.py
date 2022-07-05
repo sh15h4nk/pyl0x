@@ -32,19 +32,18 @@ def run(src):
         tokens = scanner.scan_tokens()
         
         parser = Parser(tokens)
-        statements = parser.parse()
-        print("THe statements", statements)
-        
+        statements = parser.parse()      
         resolve(statements)
+
         
         interpret(statements)
         
     except SyntaxError as e:
         error_report(e.line, e.char, e)
-        sys.exit(0)
+        # sys.exit(0)
     except ParseError as e:
-        print(e)
-        sys.exit(0)
+        error_report(e.token.line, e.token.lexeme, e)
+        # sys.exit(0)
     except RuntimeError as e:
         error_report(e.token.line, e.token.lexeme, e)
         sys.exit(0)

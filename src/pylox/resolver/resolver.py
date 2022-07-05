@@ -277,6 +277,29 @@ def resolve(handler) -> None:
         handler: list of statements or a single statement either expression or statement.
     """
     if type(handler) is list:
+        # assigning visitor method to the visitor's classes
+        EXPR.Assign.visit = visit_assign_expr
+        EXPR.Binary.visit = visit_binary_expr
+        EXPR.Call.visit = visit_call_expr
+        EXPR.Get.visit = visit_get_expr
+        EXPR.Grouping.visit = visit_grouping_expr
+        EXPR.Literal.visit = visit_literal_expr
+        EXPR.Set.visit = visit_set_expr
+        EXPR.Super.visit = visit_super_expr
+        EXPR.This.visit = visit_this_expr
+        EXPR.Unary.visit = visit_unary_expr
+        EXPR.Variable.visit = visit_variable_expr
+        EXPR.Logical.visit = visit_logical_expr
+
+        STMT.Expression.visit = visit_expression_stmt
+        STMT.Class.visit = visit_class_stmt
+        STMT.Return.visit = visit_return_stmt
+        STMT.Function.visit = visit_function_stmt
+        STMT.Print.visit = visit_print_stmt
+        STMT.Var.visit = visit_var_stmt
+        STMT.Block.visit = visit_block_stmt
+        STMT.If.visit = visit_if_stmt
+        STMT.While.visit = visit_while_stmt
         for stmt in handler:
             resolve(stmt)
     else:
@@ -346,27 +369,4 @@ def resolveLocal(expr: EXPR, name: Token) -> None:
             interpreter_resolve(expr, len(scopes)-1-i)
             return
         
-
-# assigning visitor method to the visitor's classes
-EXPR.Assign.visit = visit_assign_expr
-EXPR.Binary.visit = visit_binary_expr
-EXPR.Call.visit = visit_call_expr
-EXPR.Get.visit = visit_get_expr
-EXPR.Grouping.visit = visit_grouping_expr
-EXPR.Literal.visit = visit_literal_expr
-EXPR.Set.visit = visit_set_expr
-EXPR.Super.visit = visit_super_expr
-EXPR.This.visit = visit_this_expr
-EXPR.Unary.visit = visit_unary_expr
-EXPR.Variable.visit = visit_variable_expr
-EXPR.Logical.visit = visit_logical_expr
-
-STMT.Expression.visit = visit_expression_stmt
-STMT.Class.visit = visit_class_stmt
-STMT.Return.visit = visit_return_stmt
-STMT.Function.visit = visit_function_stmt
-STMT.Print.visit = visit_print_stmt
-STMT.Var.visit = visit_var_stmt
-STMT.Block.visit = visit_block_stmt
-STMT.If.visit = visit_if_stmt
-STMT.While.visit = visit_while_stmt
+        

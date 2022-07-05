@@ -70,14 +70,10 @@ class Parser:
     
     def declaration(self):
         """Matches the declaration statements based on the grammer"""
-        try:
-            if self.match(TOKEN_TYPE.CLASS): return self.class_declaration()
-            if self.match(TOKEN_TYPE.FUN): return self.function("function")
-            if self.match(TOKEN_TYPE.VAR): return self.var_declaration()
-            return self.statement()
-        except:
-            self.synchronize()
-            return None
+        if self.match(TOKEN_TYPE.CLASS): return self.class_declaration()
+        if self.match(TOKEN_TYPE.FUN): return self.function("function")
+        if self.match(TOKEN_TYPE.VAR): return self.var_declaration()
+        return self.statement()
     
     def class_declaration(self) -> STMT.Class:
         """Handler class declaration
@@ -418,7 +414,7 @@ class Parser:
             expr = self.expression()
             self.consume(TOKEN_TYPE.RIGHT_PAREN, "Expect ')' after expression.")
             return EXPR.Grouping(expr)
-        
+        print("It came here")
         raise self.error(self.peek(), "Expect expression.")
     
     def match(self, *args) -> bool:
@@ -493,7 +489,7 @@ class Parser:
             self.error: if the check is not passed it raises Parse error exception.
         """
         if self.check(type): return self.advance()
-        raise self.error(self.peek(), message)
+        self.error(self.peek(), message)
     
     def error(self, token: TOKEN_TYPE, message: str):
         """Handles the Error raised by the parser and reports to user.
@@ -502,7 +498,8 @@ class Parser:
             token (TOKEN_TYPE): The token raised the exception.
             message (str): message of the error.
         """
-        raise ParseError(message, token)
+        self.synchronize()
+        raise ParseError(token, message)
 
 
 if __name__ == "__main__":
