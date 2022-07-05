@@ -6,7 +6,6 @@ from pylox.interpreter.lox_instance import LoxInstance
 import pylox.parser.expr as EXPR
 import pylox.parser.stmt as STMT
 from pylox.exceptions.exceptions import RuntimeError
-from pylox.error_reporter import run_time_error
 from pylox.environment.environment import Environment
 from pylox.interpreter.lox_callable import LoxCallable
 from pylox.interpreter.function_return import FunctionReturn
@@ -413,9 +412,6 @@ def interpret(statements: List):
     
     
     # Executing statement by statement
-    try:
-        for stmt in statements:
-            execute(stmt)
-    except RuntimeError as e:
-        run_time_error(e)
-        
+    for stmt in statements:
+        execute(stmt)
+    

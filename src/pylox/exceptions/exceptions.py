@@ -1,19 +1,19 @@
-"""This class raises Run time errors"""
+"""Base exceptions of the lox"""
+
+from email import message
+
 
 class SyntaxError(Exception):
-    def __init__(self, *args: object) -> None:
-        pass
+    def __init__(self, line, char, message ) -> None:
+        super().__init__(message)
+        self.line = line
+        self.char = char
 
 class RuntimeError(Exception):
-    def __init__(self, token, message):
+    def __init__(self, token, message) -> None:
         super().__init__(message)
         self.token = token
 
 class ParseError(Exception):
-    def __init__(self, message, token) -> None:
-        super().__init__(message)
-        self.token = token
+    pass
         
-class ResolveError(Exception):
-    def __init__(self, *args: object) -> None:
-        pass

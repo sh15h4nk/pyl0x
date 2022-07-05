@@ -45,7 +45,7 @@ TOKEN_TYPE.THIS = "THIS"
 TOKEN_TYPE.SUPER = "SUPER"
 
 
-class parser:
+class Parser:
     """This class parses the tokens scanned by the scanner.
     """
     def __init__(self, tokens: List[Token]) -> None:

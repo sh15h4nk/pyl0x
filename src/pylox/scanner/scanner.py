@@ -3,10 +3,10 @@
 from typing import List, Type
 from pylox.scanner.token_types import TOKEN_TYPES, single_char_token, multi_char_token, keywords
 from pylox.scanner.token import Token
-from pylox.error_reporter import report
+from pylox.exceptions.exceptions import SyntaxError
 from decimal import Decimal
 
-class scanner:
+class Scanner:
     """Scanner class"""
     def __init__(self, source) -> None:
         """Initializing the scanner with source.
@@ -78,7 +78,7 @@ class scanner:
         elif c.isalpha() or c == "_":
             self.identifier()
         else:
-            report(self.line, c, "Unexpected character")
+            raise SyntaxError(self.line, c, "Unexpected character")
     
     def identifier(self) -> None:
         """Identifies identifiers from the source and adds to tokens.
@@ -106,7 +106,7 @@ class scanner:
             if (self.peek() == "\n"): self.line += 1
             self.advance()
         if (self.is_at_end()):
-            report(self.line, "Undeterminated string") 
+            raise SyntaxError(self.line, None, "Undeterminated string")
         self.advance()
         lexeme = self.source[self.start +1 : self.current -1]
         self.add_token(TOKEN_TYPES.STRING, lexeme)
