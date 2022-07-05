@@ -2,8 +2,6 @@
 import sys
 from pylox.scanner.token_types import TOKEN_TYPES
 
-had_error = False
-had_runtime_error = False
 
 def report(line, where, message):
     print("Error:", "[line: "+str(line)+"]", where, ":", message)

@@ -1,4 +1,6 @@
+"""Function return class: Derived from exception"""
 
-class function_return(Exception):
+class FunctionReturn(Exception):
     def __init__(self, value):
         self.value = value
+        

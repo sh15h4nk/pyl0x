@@ -1,11 +1,10 @@
+"""LoxCallable is an interface for a callable lox object"""
 
-class Lox_callable:
-    
+class LoxCallable:
     def arity(self):
         pass
-    
     def call(self, globals, arguments):
         pass
-    
-    def to_str(self):
+    def __repr__(self):
         return "<native fn>"
+    

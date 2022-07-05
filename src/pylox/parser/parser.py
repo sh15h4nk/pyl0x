@@ -6,7 +6,7 @@ from pylox.scanner.token_types import TOKEN_TYPES
 import pylox.parser.expr as EXPR
 import pylox.parser.stmt as STMT
 from types import SimpleNamespace
-from pylox.exceptions.runtime_error import ParseError
+from pylox.exceptions.exceptions import ParseError
 
 # Token type definition
 TOKEN_TYPE = SimpleNamespace(**TOKEN_TYPES.__dict__)

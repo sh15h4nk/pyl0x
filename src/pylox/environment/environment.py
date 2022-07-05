@@ -1,13 +1,13 @@
 """This class holds the structure of the environment(state) where the variables are stored in a dictionary
 
     Raises:
-        runtime_error: In get() function if it encounters getting a undefined variable
-        runtime_error: In assign() function if it encounters assigning a undefined variable
+        RuntimeError: In get() function if it encounters getting a undefined variable
+        RuntimeError: In assign() function if it encounters assigning a undefined variable
 
     Returns:
         Environment: The state enclosed in a scope
 """
-from pylox.exceptions.runtime_error import runtime_error
+from pylox.exceptions.exceptions import RuntimeError
 from pylox.scanner.token import Token
 
 class Environment:
@@ -26,7 +26,7 @@ class Environment:
         if name.lexeme in self.values:
             return self.values.get(name.lexeme)
         if self.enclosing is not None: return self.enclosing.get(name)
-        raise runtime_error(name, "Undefined variable '" + name.lexeme + "'.")
+        raise RuntimeError(name, "Undefined variable '" + name.lexeme + "'.")
     
     def assign(self, name, value) -> None:
         if type(name) is str: name = Token(None, name, None, None)
@@ -36,7 +36,7 @@ class Environment:
         if self.enclosing is not None:
             self.enclosing.assign(name, value)
             return
-        raise runtime_error(name, "Undefined variable '"+ name.lexeme + "'.")
+        raise RuntimeError(name, "Undefined variable '"+ name.lexeme + "'.")
     
     def define(self, name, value) -> None:
         if type(name) is str: name = Token(None, name, None, None)
