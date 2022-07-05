@@ -1,5 +1,5 @@
 """Error Reporters"""
-import sys
+
 from pylox.scanner.token_types import TOKEN_TYPES
 
 

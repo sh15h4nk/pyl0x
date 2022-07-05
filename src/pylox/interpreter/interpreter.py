@@ -1,5 +1,5 @@
 """Lox Intepreter which interprets the parsed statements"""
-
+import time
 from typing import List, Optional
 from pylox.interpreter.lox_function import LoxFunction
 from pylox.interpreter.lox_instance import LoxInstance
@@ -178,6 +178,8 @@ def visit_variable_expr(expr: EXPR.Variable):
 def look_up_variable(name: Token, expr: EXPR):
     """Resolves the variable from the locals and globals"""
     dist = locals.get(expr)
+    print("-"*50)
+    print("Dist", dist, "NAme", name, locals)
     if dist is not None:
         return env.get_at(dist, name)
     else:
@@ -307,7 +309,7 @@ def check_number_operand(operator, operand) -> bool:
 
 def visit_grouping_expr(expr: EXPR.Grouping):
     """Evaluates a Grouping expression"""
-    return evaluate(expr)
+    return evaluate(expr.expression)
 
 def visit_literal_expr(expr: EXPR.Literal):
     """Evaluates a literal"""
@@ -400,15 +402,18 @@ def interpret(statements: List):
     STMT.If.visit = visit_if_stmt
     STMT.While.visit = visit_while_stmt
     
-    # def c_arity():
-    #     return 0
-    # def c_call(interepreter, globals):
-    #     return time.time()
+    def c_arity():
+        return 0
+    def c_call(interepreter, globals):
+        return time.time()
         
-    # clock_object = LoxCallable()
-    # clock_object.arity = c_arity
-    # clock_object.call = c_call
-    # globals.define("clock",clock_object)
+    clock_object = LoxCallable()
+    clock_object.arity = c_arity
+    clock_object.call = c_call
+    globals.define("clock",clock_object)
+    
+    print("locc", locals)
+    
     
     
     # Executing statement by statement

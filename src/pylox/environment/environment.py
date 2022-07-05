@@ -33,6 +33,7 @@ class Environment:
         Raises:
             RuntimeError: if the name is not found in the env as well as in the enclosing env.
         """
+        print("Getting", name.lexeme, self, self.enclosing)
         if type(name) is str: name = Token(None, name, None, None)
         if name.lexeme in self.values:
             return self.values.get(name.lexeme)

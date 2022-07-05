@@ -9,40 +9,10 @@ from types import SimpleNamespace
 from pylox.exceptions.exceptions import ParseError
 
 # Token type definition
-TOKEN_TYPE = SimpleNamespace(**TOKEN_TYPES.__dict__)
-TOKEN_TYPE.BANG_EQUAL = "BANG_EQUAL"
-TOKEN_TYPE.EQUAL_EQUAL = "EQUAL_EQUAL"
-TOKEN_TYPE.GREATER = "GREATER"
-TOKEN_TYPE.GREATER_EQUAL = "GREATER_EQUAL"
-TOKEN_TYPE.LESS = "LESS"
-TOKEN_TYPE.LESS_EQUAL = "LESS_EQUAL"
-TOKEN_TYPE.MINUS = "MINUS"
-TOKEN_TYPE.PLUS = "PLUS"
-TOKEN_TYPE.SLASH = "SLASH"
-TOKEN_TYPE.STAR = "STAR"
-TOKEN_TYPE.BANG = "BANG"
-TOKEN_TYPE.EQUAL = "EQUAL"
-TOKEN_TYPE.LEFT_PAREN = "LEFT_PAREN"
-TOKEN_TYPE.RIGHT_PAREN = "RIGHT_PAREN"
-TOKEN_TYPE.COMA = "COMA"
-TOKEN_TYPE.DOT = "DOT"
-TOKEN_TYPE.SEMICOLON = "SEMICOLON"
-TOKEN_TYPE.LEFT_BRACE = "LEFT_BRACE"
-TOKEN_TYPE.RIGHT_BRACE = "RIGHT_BRACE"
-TOKEN_TYPE.PRINT = "PRINT"
-TOKEN_TYPE.VAR = "VAR"
-TOKEN_TYPE.IDENTIFIER = "IDENTIFIER"
-TOKEN_TYPE.IF = "IF"
-TOKEN_TYPE.ELSE = "ELSE"
-TOKEN_TYPE.OR = "OR"
-TOKEN_TYPE.AND = "AND"
-TOKEN_TYPE.WHILE = "WHILE"
-TOKEN_TYPE.FOR = "FOR"
-TOKEN_TYPE.FUN = "FUN"
-TOKEN_TYPE.RETURN = "RETURN"
-TOKEN_TYPE.CLASS = "CLASS"
-TOKEN_TYPE.THIS = "THIS"
-TOKEN_TYPE.SUPER = "SUPER"
+tkns = {}
+for k,v in dict(TOKEN_TYPES.__dict__).items():
+    tkns[k] = k
+TOKEN_TYPE = SimpleNamespace(**tkns)
 
 
 class Parser:
@@ -174,7 +144,7 @@ class Parser:
         self.consume(TOKEN_TYPE.RIGHT_PAREN, "Expect ')' after if condition.")
         thenBranch = self.statement()
         elseBranch = None
-        if self.match(TOKEN_TYPE.ELSE): elseBranch = self.statement
+        if self.match(TOKEN_TYPE.ELSE): elseBranch = self.statement()
         return STMT.If(condition, thenBranch, elseBranch)
         
     def print_statement(self) -> STMT.Print:
@@ -414,7 +384,6 @@ class Parser:
             expr = self.expression()
             self.consume(TOKEN_TYPE.RIGHT_PAREN, "Expect ')' after expression.")
             return EXPR.Grouping(expr)
-        print("It came here")
         raise self.error(self.peek(), "Expect expression.")
     
     def match(self, *args) -> bool:

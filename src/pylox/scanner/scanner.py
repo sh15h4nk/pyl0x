@@ -53,7 +53,7 @@ class Scanner:
             Also reports error if any unexpected char is found.
         """
         c = self.advance()
-        if c in list(single_char_token.values()):
+        if c in list(single_char_token.values()) and c != "/":
             type = list(single_char_token.keys())[list(single_char_token.values()).index(c)]
             self.add_token(type, None)
         elif c in list(multi_char_token.values()):
@@ -62,11 +62,10 @@ class Scanner:
                 type += "_EQUAL"
             self.add_token(type, None)
         elif c == "/":
-            if (self.match("/")):
-                while (self.peek() != "\n" and not self.is_at_end()):
-                    self.advance()
+            if self.match("/"):
+                while (self.peek() != "\n" and not self.is_at_end()):   self.advance()
             else:
-                self.add_token({"SLASH": "/"}, None)
+                self.add_token("SLASH", None)
         elif c in [" ", "\r", "\t"]:
             pass
         elif c == "\n":

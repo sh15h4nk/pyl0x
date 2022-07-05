@@ -1,5 +1,7 @@
 
+from shutil import ExecError
 import sys
+import readline
 import argparse
 from pylox.scanner.scanner import Scanner
 from pylox.parser.parser import Parser
@@ -13,6 +15,9 @@ from pylox.error_reporter import report as error_report
 
 def run_prompt():
     try:
+        readline.parse_and_bind('tab: complete')
+        readline.parse_and_bind('set editing-mode vi')
+        readline.parse_and_bind('C-x: "\x16\n"')
         while True:
             cmd = input("> ")
             run(cmd)
@@ -25,6 +30,7 @@ def run_file(file):
     if src == "":
         print("Your source file is empty :/")
         return
+    run(src)
 
 def run(src):
     try:
@@ -32,21 +38,23 @@ def run(src):
         tokens = scanner.scan_tokens()
         
         parser = Parser(tokens)
-        statements = parser.parse()      
+        statements = parser.parse()
+        
         resolve(statements)
-
         
         interpret(statements)
         
     except SyntaxError as e:
         error_report(e.line, e.char, e)
-        # sys.exit(0)
     except ParseError as e:
         error_report(e.token.line, e.token.lexeme, e)
-        # sys.exit(0)
     except RuntimeError as e:
-        error_report(e.token.line, e.token.lexeme, e)
-        sys.exit(0)
+        try:
+            error_report(e.token.line, e.token.lexeme, e)
+        except:
+            error_report("#", None,e )
+    except Exception as e:
+        print(e)
     
 
 def main():
