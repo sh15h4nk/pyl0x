@@ -1,3 +1,4 @@
+"""A Tool kit which prints the parsed AST after parsing tokens"""
 
 import pylox.parser.expr as EXPR
 from pylox.scanner.token import Token
@@ -34,6 +35,7 @@ def ast_printer(expr):
 
 
 if __name__ == "__main__":
+    # Usage
     expression = EXPR.Binary(EXPR.Unary(Token(TOKEN_TYPES.MINUS, "-", None, 1), EXPR.Literal(123)), Token(TOKEN_TYPES.STAR, "*", None, 1), EXPR.Grouping(EXPR.Literal(45.67)))
     ast_printer(expression)
 
