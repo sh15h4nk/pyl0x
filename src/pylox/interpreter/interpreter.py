@@ -2,7 +2,7 @@ from threading import local
 import time
 from pylox.interpreter.lox_function import Lox_function
 from pylox.interpreter.lox_instance import LoxInstance
-import pylox.parser.expr as EXP
+import pylox.parser.expr as EXPR
 import pylox.parser.stmt as STMT
 from pylox.exceptions.runtime_error import runtime_error
 from pylox.error_reporter import run_time_error
@@ -53,7 +53,7 @@ def visit_var_stmt(stmt):
 def visit_variable_expr(expr):
     return look_up_variable(expr.name, expr)
 
-def look_up_variable(name: Token, expr: EXP):
+def look_up_variable(name: Token, expr: EXPR):
     dist = locals.get(expr)
     if dist is not None:
         return env.get_at(dist, name)
@@ -114,12 +114,12 @@ def visit_call_expr(expr):
 
     return function.call(globals, arguments)
 
-def visit_get_expr(expr: EXP.Get):
+def visit_get_expr(expr: EXPR.Get):
     object = evaluate(expr.object)
     if type(object) is LoxInstance: return object.get(expr.name)
     raise runtime_error(expr.name, "Only instances have property")
 
-def visit_set_expr(expr: EXP.Set):
+def visit_set_expr(expr: EXPR.Set):
     object = evaluate(expr.object)
     if type(object) is not LoxInstance: raise runtime_error(expr.name, "Only instances have fields")
     
@@ -177,7 +177,7 @@ def stringify(obj):
 def execute(stmt):
     stmt.accept(stmt)
     
-def resolve(expr: EXP, depth: int):
+def resolve(expr: EXPR, depth: int):
     locals[expr] = depth
     
 def visit_block_stmt(stmt):
@@ -208,10 +208,10 @@ def visit_class_stmt(stmt: STMT.Class):
     
     env.assign(stmt.name, klass)
     
-def visit_this_expr(expr: EXP.This):
+def visit_this_expr(expr: EXPR.This):
     return look_up_variable(expr.keyword, expr)
     
-def visit_super_expr(expr: EXP.Super):
+def visit_super_expr(expr: EXPR.Super):
     dist = locals.get(expr)
     superclass = env.get_at(dist, "super")
     object = env.get_at(dist - 1, "this")
@@ -233,18 +233,18 @@ def execute_block(statements, _env):
 
 def interpret(statements):
     # assigning visitor method to the classes
-    EXP.Assign.visit = visit_assign_expr
-    EXP.Binary.visit = visit_binary_expr
-    EXP.Call.visit = visit_call_expr
-    EXP.Get.visit = visit_get_expr
-    EXP.Grouping.visit = visit_grouping_expr
-    EXP.Literal.visit = visit_literal_expr
-    EXP.Set.visit = visit_set_expr
-    EXP.Super.visit = visit_super_expr
-    EXP.This.visit = visit_this_expr
-    EXP.Unary.visit = visit_unary_expr
-    EXP.Variable.visit = visit_variable_expr
-    EXP.Logical.visit = visit_logical_expr
+    EXPR.Assign.visit = visit_assign_expr
+    EXPR.Binary.visit = visit_binary_expr
+    EXPR.Call.visit = visit_call_expr
+    EXPR.Get.visit = visit_get_expr
+    EXPR.Grouping.visit = visit_grouping_expr
+    EXPR.Literal.visit = visit_literal_expr
+    EXPR.Set.visit = visit_set_expr
+    EXPR.Super.visit = visit_super_expr
+    EXPR.This.visit = visit_this_expr
+    EXPR.Unary.visit = visit_unary_expr
+    EXPR.Variable.visit = visit_variable_expr
+    EXPR.Logical.visit = visit_logical_expr
 
     STMT.Expression.visit = visit_expression_stmt
     STMT.Class.visit = visit_class_stmt
