@@ -45,14 +45,18 @@ def run(src):
         interpret(statements)
         
     except SyntaxError as e:
-        error_report(e.line, e.char, e)
+        error_report(e.line, e.char, e, "SyntaxError")
     except ParseError as e:
-        error_report(e.token.line, e.token.lexeme, e)
+        error_report(e.token.line, e.token.lexeme, e, "ParseError")
     except RuntimeError as e:
         try:
-            error_report(e.token.line, e.token.lexeme, e)
+            error_report(e.token.line, e.token.lexeme, e, "RuntimeError")
         except:
-            error_report("#", None,e )
+            error_report("#", None, e, "RuntimeError")
+    except(RecursionError) as e:
+        print("RuntimeError: StackOverflow")
+    except(KeyboardInterrupt) as e:
+        print("Exiting...")
     except Exception as e:
         print(e)
     

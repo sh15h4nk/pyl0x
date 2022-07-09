@@ -27,7 +27,7 @@ class LoxFunction(LoxCallable):
         return len(self.declaration.params)
     
     def __repr__(self) -> str:
-        return "<fn {}>".format(self.declaration.name)
+        return "<fn {}>".format(self.declaration.name.lexeme)
     
     def bind(self, instance: LoxInstance):
         """Binds the given interface to a function"""

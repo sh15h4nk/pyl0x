@@ -1,4 +1,6 @@
 """Lox Intepreter which interprets the parsed statements"""
+import decimal
+from threading import local
 import time
 from typing import List, Optional
 from pylox.interpreter.lox_function import LoxFunction
@@ -153,7 +155,7 @@ def visit_assign_expr(expr: EXPR.Assign):
     """
     value = evaluate(expr.value)
     dist = locals.get(expr)
-    if dist: env.assign_at(dist, expr.name, value)
+    if dist is not None: env.assign_at(dist, expr.name, value)
     else: globals.assign(expr.name, value)
     return value
 
@@ -178,10 +180,8 @@ def visit_variable_expr(expr: EXPR.Variable):
 def look_up_variable(name: Token, expr: EXPR):
     """Resolves the variable from the locals and globals"""
     dist = locals.get(expr)
-    print("-"*50)
-    print("Dist", dist, "NAme", name, locals)
     if dist is not None:
-        return env.get_at(dist, name)
+        return env.get_at(dist, name.lexeme)
     else:
         return globals.get(name)
 
@@ -198,13 +198,16 @@ def visit_binary_expr(expr: EXPR.Binary):
     right = evaluate(expr.right)
 
     if expr.operator.type == "MINUS" and check_number_operands(expr.operator, left, right): return float(left) - float(right)
-    elif expr.operator.type == "SLASH" and  check_number_operands(expr.operator, left, right): return float(left) / float(right)
+    elif expr.operator.type == "SLASH" and  check_number_operands(expr.operator, left, right):
+        if float(right) == 0:
+            return float("nan")
+        return float(left) / float(right)
     elif expr.operator.type == "STAR" and check_number_operands(expr.operator, left, right): return float(left) * float(right)
 
     elif expr.operator.type == "PLUS":
         if is_float(left) and is_float(right): return float(left) + float(right)
         if type(left) is str and type(right) is str : return str(left+right)
-        raise RuntimeError(expr.operand, "Operands must be two numbers or two strings.")
+        raise RuntimeError(expr.operator, "Operands must be two numbers or two strings.")
     
     elif expr.operator.type == "GREATER" and check_number_operands(expr.operator, left, right): return float(left) > float(right)
     elif expr.operator.type == "GREATER_EQUAL" and check_number_operands(expr.operator, left, right): return float(left) >= float(right)
@@ -233,7 +236,6 @@ def visit_call_expr(expr: EXPR.Call):
     function = callee
     if len(arguments) != function.arity():
         raise RuntimeError(expr.paren, "Expected {} arguments but got {}.".format(function.arity(), len(arguments)))
-
     return function.call(globals, arguments)
 
 def visit_get_expr(expr: EXPR.Get):
@@ -272,7 +274,7 @@ def visit_unary_expr(expr: EXPR.Unary):
         expr (EXPR.Unary): Unary expression node.
     """
     right = evaluate(expr.right)
-    if expr.operator.type == "MINUS" and check_number_operand(expr.operator, right): return -right
+    if expr.operator.type == "MINUS" and check_number_operand(expr.operator, right): return float(-right)
     elif expr.operator.type == "BANG": return not is_truthy(right)
 
     return None
@@ -304,7 +306,7 @@ def check_number_operand(operator, operand) -> bool:
     Raises:
         RuntimeError: if the operand is not a digit.
     """
-    if operand.isdigit(): return True
+    if type(operand) in [int, float, decimal.Decimal] or str(operand).isdigit(): return True
     raise RuntimeError(operator, "Operand must be a number.")
 
 def visit_grouping_expr(expr: EXPR.Grouping):
@@ -411,10 +413,6 @@ def interpret(statements: List):
     clock_object.arity = c_arity
     clock_object.call = c_call
     globals.define("clock",clock_object)
-    
-    print("locc", locals)
-    
-    
     
     # Executing statement by statement
     for stmt in statements:

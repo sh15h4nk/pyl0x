@@ -58,10 +58,10 @@ def visit_class_stmt(stmt: STMT.Class) -> None:
         resolve(stmt.superclass)
     if stmt.superclass:
         begin_scope()
-        scopes[-1] = {"super": True}
+        scopes[-1].update({"super": True})
     
     begin_scope()
-    scopes[-1] = {"this": True}
+    scopes[-1].update({"this": True})
     
     # methods analysis
     for method in stmt.methods:
@@ -112,7 +112,7 @@ def visit_var_stmt(stmt: STMT.Var) -> None:
         stmt (STMT.Var): variable statement node.
     """
     declare(stmt.name)
-    if stmt.initializer:
+    if stmt.initializer != None:
         resolve(stmt.initializer)
     define(stmt.name)
     return None
@@ -123,8 +123,9 @@ def visit_variable_expr(expr: EXPR.Variable) -> None:
     Args:
         expr (EXPR.Variable): variable expression node.
     """
-    if len(scopes) and scopes[-1].get(expr.name.lexeme) == False:
+    if len(scopes) != 0 and scopes[-1].get(expr.name.lexeme) == False:
        raise RuntimeError(expr.name, "Can't read local variable in its own initializer.")
+   
     resolveLocal(expr, expr.name)
     return None
 
@@ -341,11 +342,11 @@ def declare(name: Token) -> None:
     Args:
         name (Token): token of the identifier.
     """
-    if not len(scopes):
+    if len(scopes) == 0:
         return None
     if name.lexeme in scopes[-1]:
         raise RuntimeError(name, "Already a variable with this name exists in the scope.")
-    scopes[-1] = {name.lexeme: False}
+    scopes[-1].update({name.lexeme: False})
 
 def define(name: Token) -> None:
     """Defines an identifier in the scope.
@@ -353,9 +354,9 @@ def define(name: Token) -> None:
     Args:
         name (Token): token of the identifier.
     """
-    if not len(scopes):
+    if len(scopes) == 0:
         return None
-    scopes[-1] = {name.lexeme: True}
+    scopes[-1].update({name.lexeme: True})
 
 def resolveLocal(expr: EXPR, name: Token) -> None:
     """Resolves local identifiers to the interpreter state.
@@ -364,9 +365,10 @@ def resolveLocal(expr: EXPR, name: Token) -> None:
         expr (EXPR): expression to be resolved.
         name (Token): token of the identifier.
     """
-    for i in range(len(scopes) -1 ,-1, -1):
+    i = len(scopes) - 1
+    while i >= 0:
         if name.lexeme in scopes[i]:
-            interpreter_resolve(expr, len(scopes)-1-i)
+            interpreter_resolve(expr, len(scopes) - 1 - i)
             return
-        
+        i -= 1
         

@@ -121,6 +121,3 @@ class Variable:
 	def accept(self, visitor):
 		return visitor.visit()
 
-	def __repr__(self) -> str:
-		return "VAR {}".format(self.name.lexeme)
-
