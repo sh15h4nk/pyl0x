@@ -62,15 +62,15 @@ def run(src):
     
 
 def main():
-	parser = argparse.ArgumentParser()
-	parser.add_argument("infile", nargs="?", type=argparse.FileType('r'), default=None)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("infile", nargs="?", type=argparse.FileType('r'), default=None)
 
-	args = parser.parse_args()
-
-	if args.infile is None:
-		run_prompt()
-	else:
-		run_file(args.infile)
+    args = parser.parse_args()
+    if args.infile is None:
+        run_prompt()
+    else:
+        run_file(args.infile)
+        
 
 
 if __name__ == "__main__":
